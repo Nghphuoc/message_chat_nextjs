@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const USER_ID = "20121a18-deec-4229-bfd6-baaed28e18ee"; // 👈 đổi theo người dùng thật
-const ROOM_ID = "f22e1d39-8a5f-4ada-8851-d3558f640bb2";
+const USER_ID = "64ee176b-ef44-4c42-937d-aba39ed0d253"; // 👈 đổi theo người dùng thật
+const ROOM_ID = "7f78c2ad-b58e-44fc-958a-7d806402a5a8";
 export default function ChatRoom() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -60,9 +60,9 @@ export default function ChatRoom() {
             const isMe = msg.user_id === USER_ID;
             return (
               <div key={msg.message_id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm shadow-sm
+                <div className={`flex flex-col items-end space-y-1
                   ${isMe
-                    ? "bg-blue-500 text-white rounded-br-none"
+                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm rounded-2xl rounded-tr-md px-3 sm:px-4 py-2 sm:py-3 shadow-sm max-w-xs sm:max-w-md"
                     : "bg-gray-200 text-gray-900 rounded-bl-none"
                   }`}
                 >
@@ -84,7 +84,7 @@ export default function ChatRoom() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Aa"
-              className="flex-1 px-4 py-2 rounded-full bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+              className="flex-1 px-4 py-2 text-black rounded-full bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
             />
             <button
               onClick={sendMessage}

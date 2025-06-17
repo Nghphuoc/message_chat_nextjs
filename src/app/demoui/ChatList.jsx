@@ -2,9 +2,9 @@
 export default function ChatList() {
   return (
     <div className="hidden md:flex ml-[80px] w-80 flex-col border-r border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-lg">
-      <section className="flex flex-col w-full h-full px-4 py-6 sm:px-6 sm:py-8">
+      <section className="flex flex-col w-full h-full px-2 py-4 ">
         {/* User Info */}
-        <div className="flex items-center space-x-3 sm:space-x-4 mb-6 sm:mb-8 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-sm">
+        <div className="flex items-center space-x-3 sm:space-x-2 mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-sm">
           <div className="relative">
             <img
               className="rounded-full ring-4 ring-white shadow-lg"
@@ -73,7 +73,7 @@ export default function ChatList() {
         </div>
 
         {/* Chat List */}
-        <ul className="flex flex-col space-y-2 sm:space-y-3 overflow-y-auto scrollbar-thin" style={{ maxHeight: "400px" }}>
+        <ul className="flex flex-col space-y-2 sm:space-y-3 h-96 overflow-y-auto scrollbar-thin scrollbar-hide" style={{ maxHeight: "400px" }}>
           {/* Sample Message */}
           <li className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 cursor-pointer group">
             <div className="relative">
@@ -97,6 +97,8 @@ export default function ChatList() {
 
           {/* Additional sample chats */}
           {[
+            { name: "Alice Johnson", status: "Hey, how are you?", time: "2m", unread: 0 },
+            { name: "Alice Johnson", status: "Hey, how are you?", time: "2m", unread: 0 },
             { name: "Alice Johnson", status: "Hey, how are you?", time: "2m", unread: 0 },
             { name: "Bob Smith", status: "Meeting at 3 PM", time: "5m", unread: 1 },
             { name: "Carol Davis", status: "Thanks for the help!", time: "1h", unread: 0 },

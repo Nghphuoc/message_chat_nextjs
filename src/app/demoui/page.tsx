@@ -5,6 +5,7 @@ import ChatWindow from './chatWindow';
 import RightPanel from './rightPanel';
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
+import "../globals.css"; // Import global styles
 
 const PageRoot = () => {
   const [rightPanelWidth, setRightPanelWidth] = useState(320);
@@ -37,19 +38,19 @@ const PageRoot = () => {
   }, [isResizing]);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-tr from-sky-50 to-blue-100 overflow-hidden">
+    <div className="flex h-screen bg-gradient-to-tr from-sky-50 to-blue-100 overflow-hidden">
 
-      <div className="flex-shrink-0 hidden md:flex">
+      <div className="flex-shrink-0 hidden md:flex h-screen border-r border-gray-200 bg-white">
         <Sidebar />
       </div>
 
       <div className="flex flex-1 flex-col md:flex-row" ref={containerRef}>
 
-        <div className="hidden md:flex w-[400px] flex-shrink-0">
+        <div className="hidden md:flex w-[400px] flex-shrink-0 h-screen border-r border-gray-200 bg-white">
           <ChatList />
         </div>
 
-        <div className="flex flex-1 flex-col relative min-h-0 max-h-[800px]">
+        <div className="flex flex-1 flex-col relative min-h-screen bg-white">
           <ChatWindow onMenuClick={undefined} onChatListClick={undefined} />
 
           {/* column edit size */}
@@ -62,7 +63,7 @@ const PageRoot = () => {
         {/* Right Panel - controlled transition */}
         <div
           className={clsx(
-            'hidden lg:flex flex-shrink-0 h-full',
+            'hidden lg:flex flex-shrink-0 h-screen bg-white border-l border-gray-200',
             !isResizing && 'transition-all duration-300 ease-in-out'
           )}
           style={{ width: `${rightPanelWidth}px` }}

@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { fetchOldMessages } from "@/app/service/MessageService"; // Import the fetch function
-
-const USER_ID = "64ee176b-ef44-4c42-937d-aba39ed0d253"; // 👈 đổi theo người dùng thật
-const ROOM_ID = "7f78c2ad-b58e-44fc-958a-7d806402a5a8";
+import { fetchOldMessages } from "@/app/service/MessageService"; // Import your service to fetch old messages
+import "../../css/hiddenscroll.css"; // Import custom scrollbar styles
+const USER_ID = "11604a5a-1713-4a0f-b2fa-d2768ca56fed"; // 👈 đổi theo người dùng thật
+const ROOM_ID = "c98dbe8d-f615-4c6e-a79d-5c55a036a63c";
 
 // Emoji data
 const EMOJIS = [
@@ -206,10 +206,10 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
           </button>
 
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <h2 className="text-base sm:text-lg font-bold text-gray-800">Group #1</h2>
+            <h2 className="text-base sm:text-lg font-bold text-gray-800">Ghệ Dít Pự</h2>
             <div className="flex items-center space-x-1">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              <span className="text-xs sm:text-sm text-gray-500">3 online</span>
+              <span className="text-xs sm:text-sm text-gray-500">online</span>
             </div>
           </div>
         </div>
@@ -236,33 +236,25 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
             </svg>
           </button>
 
+          {/* img user  */}
           <div className="flex items-center -space-x-1 sm:-space-x-2">
             <img
               className="rounded-full border-2 border-white shadow-sm"
               src="https://storage.googleapis.com/a1aa/image/4cf23f41-8a5f-4d21-7197-c7ae87377368.jpg"
-              width="24"
-              height="24"
+              width="35"
+              height="35"
               alt="User"
             />
-            <img
-              className="rounded-full border-2 border-white shadow-sm"
-              src="https://storage.googleapis.com/a1aa/image/a0773811-3e87-4fcc-ea3b-8d900e8daf49.jpg"
-              width="24"
-              height="24"
-              alt="User"
-            />
-            <div className="w-5 h-5 sm:w-7 sm:h-7 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full border-2 border-white flex items-center justify-center shadow-sm">
-              +6
-            </div>
+            
           </div>
         </div>
       </header>
 
       {/* Chat Messages */}
-      <div className="flex flex-col space-y-4 sm:space-y-6 overflow-y-auto scrollbar-thin px-4 sm:px-6 py-4 sm:py-6 h-[calc(100vh-200px)]">
+      <div className="flex flex-col space-y-4 sm:space-y-6 overflow-y-auto px-4 bg-white sm:px-6 py-4 sm:py-6 h-[calc(100vh-150px)] scrollbar-hide">
 
         {/* Outgoing Message */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 h-fit">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-white scrollbar-hide">
           {messages.map((msg) => {
             const isMe = msg.user_id === USER_ID;
 
@@ -300,7 +292,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
                       title="Add reaction"
                     >
                       <svg className="w-3 h-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
                       </svg>
                     </button>
 
@@ -309,7 +301,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
                       <div
                         ref={emojiPickerRef}
                         className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-1 z-50 w-[110px] flex flex-col items-center`}
-                        style={{minWidth: 0}}
+                        style={{ minWidth: 0 }}
                       >
                         <div className="grid grid-cols-3 gap-1">
                           {EMOJIS.map((emoji, index) => (
@@ -335,8 +327,8 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
                           key={emoji}
                           onClick={() => addReaction(msg.message_id, emoji)}
                           className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 transition-all duration-150 hover:scale-105 ${hasUserReacted(msg, emoji)
-                              ? 'bg-blue-100 text-blue-600 border border-blue-200 shadow-sm'
-                              : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 hover:border-gray-300'
+                            ? 'bg-blue-100 text-blue-600 border border-blue-200 shadow-sm'
+                            : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 hover:border-gray-300'
                             }`}
                           title={`${emoji} (${getReactionCount(msg, emoji)})`}
                         >
@@ -401,7 +393,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
           </svg>
         </button>
-        
+
         <div className="flex-1 relative">
           <input
             value={input}
@@ -412,7 +404,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
             className="w-full rounded-full border border-gray-200 bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             placeholder="Type your message here..."
           />
-          
+
           {/* Emoji picker button in input */}
           <button
             type="button"
@@ -421,10 +413,10 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
             title="Add emoji"
           >
             <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
             </svg>
           </button>
-          
+
           {/* Input emoji picker */}
           {showInputEmojiPicker && (
             <div
@@ -447,7 +439,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
             </div>
           )}
         </div>
-        
+
         <button
           type="submit"
           onClick={sendMessage}

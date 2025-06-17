@@ -2,7 +2,8 @@
 export default function RightPanel() {
   return (
     <aside className="w-full border-l border-gray-200 px-6 py-8 bg-gradient-to-b from-white to-gray-50 shadow-lg hidden lg:flex flex-col">
-      {/* Header */}
+      <div className="max-w-md mx-auto w-full space-y-8 h-full scrollbar-hide overflow-y-auto">
+        {/* Header */}
       <div className="mb-8">
         <h3 className="text-lg font-bold text-gray-800 mb-2">Group Info</h3>
         <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
@@ -14,12 +15,6 @@ export default function RightPanel() {
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Group Name</p>
           <p className="text-base font-bold text-gray-800">Group #1</p>
-        </div>
-
-        {/* Description */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-          <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Description</p>
-          <p className="text-sm text-gray-700 leading-relaxed">This is a group chat for planning our New Year vacation 🎉</p>
         </div>
 
         {/* Members */}
@@ -92,6 +87,7 @@ export default function RightPanel() {
             </button>
           </div>
         </div>
+      </div>
       </div>
     </aside>
   );

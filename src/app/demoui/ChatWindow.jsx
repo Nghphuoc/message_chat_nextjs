@@ -1,163 +1,221 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { fetchOldMessages } from "@/app/service/MessageService"; // Import your service to fetch old messages
-import "../../css/hiddenscroll.css"; // Import custom scrollbar styles
-// const USER_ID = "11604a5a-1713-4a0f-b2fa-d2768ca56fed"; // 👈 đổi theo người dùng thật
-// const ROOM_ID = "c98dbe8d-f615-4c6e-a79d-5c55a036a63c";
-
-const USER_ID = "20121a18-deec-4229-bfd6-baaed28e18ee"; // 👈 đổi theo người dùng thật
-const ROOM_ID = "f22e1d39-8a5f-4ada-8851-d3558f640bb2";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { fetchOldMessages } from "@/app/service/MessageService";
+import "../../css/hiddenscroll.css";
 
 // Emoji data
 const EMOJIS = [
   "😁", "😅", "❤️", "😍", "😘", "👍", "😂", "😭", "😡"
 ];
 
-export default function ChatWindow({ onMenuClick, onChatListClick }) {
+export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
+  const USER_ID = "20121a18-deec-4229-bfd6-baaed28e18ee";
+  const ROOM_ID = chat.room_id;
 
+  const messageCache = useRef({});
+  const connectionRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeEmojiPicker, setActiveEmojiPicker] = useState(null);
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false);
+
   const ws = useRef(null);
   const scrollRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const emojiPickerRef = useRef(null);
   const inputEmojiPickerRef = useRef(null);
 
+  // WebSocket connection management
   useEffect(() => {
-    ws.current = new WebSocket(
-      `ws://localhost:8000/api/ws/${ROOM_ID}/${USER_ID}`
-    );
+    console.log("chat: ", chat);
+    if (!ROOM_ID || !USER_ID) {
+      console.log("🚫 No room ID or user ID");
+      if (ws.current) ws.current.close();
+      setMessages([]);
+      return;
+    }
 
-    ws.current.onmessage = (event) => {
+    // Reuse existing connection
+    if (connectionRef.current?.roomId === ROOM_ID) {
+      console.log("🔄 Using existing connection");
+      return;
+    }
+
+    // Close previous connection
+    if (ws.current) {
+      console.log("🔌 Closing previous connection");
+      ws.current.close();
+    }
+
+    console.log("🔌 Creating new WebSocket connection");
+    const socket = new WebSocket(`ws://localhost:8000/api/ws/${ROOM_ID}/${USER_ID}`);
+    ws.current = socket;
+    connectionRef.current = { roomId: ROOM_ID, socket };
+
+    // Event handlers
+    socket.onopen = () => console.log("✅ WebSocket connected");
+    socket.onerror = (error) => console.error("❌ WebSocket error:", error);
+
+    socket.onclose = (event) => {
+      console.log("🔌 WebSocket closed:", event.code, event.reason);
+      if (ws.current === socket) ws.current = null;
+    };
+
+    socket.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        setMessages((prev) => {
-          console.log("Received message:", prev);
-          if (prev.some((m) => m.message_id === msg.message_id)) return prev;
-          return [...prev, msg];
+        setMessages(prev => {
+          // Prevent duplicates
+          if (prev.some(m => m.message_id === msg.message_id)) return prev;
+
+          const updated = [...prev, msg];
+          messageCache.current[ROOM_ID] = updated;
+          return updated;
         });
       } catch (err) {
-        console.error("Invalid message:", err);
-      } finally {
-        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-        console.log("data message:", messages);
+        console.error("❌ Invalid message format:", err);
       }
     };
 
-    fetchMessages(); // Fetch old messages when component mounts
+    // Load messages
+    fetchMessages();
 
     return () => {
-      ws.current?.close();
+      if (ws.current?.readyState !== WebSocket.CLOSED) {
+        ws.current?.close();
+      }
+      ws.current = null;
+      connectionRef.current = null;
     };
-  }, []);
+  }, [ROOM_ID]);
 
+  // Scroll to bottom when messages change
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
+
+    // Only scroll if user is near bottom
+    const isNearBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop
+      <= scrollContainer.clientHeight + 100;
+
+    if (isNearBottom) {
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: "smooth"
+      });
+    }
   }, [messages]);
 
-  // call service at package service
-  const fetchMessages = async () => {
-    setMessages(await fetchOldMessages(ROOM_ID)); // Clear existing messages
-  };
+  // Load messages with caching
+  const fetchMessages = useCallback(async () => {
+    if (!ROOM_ID) return;
 
-  // Handle typing indicator
+    // Use cache if available
+    if (messageCache.current[ROOM_ID]) {
+      setMessages(messageCache.current[ROOM_ID]);
+      return;
+    }
+
+    try {
+      const oldMessages = await fetchOldMessages(ROOM_ID);
+      setMessages(oldMessages);
+      messageCache.current[ROOM_ID] = oldMessages;
+    } catch (err) {
+      console.error("❌ Error fetching messages:", err);
+    }
+  }, [ROOM_ID]);
+
+  // Typing indicator logic
   const handleInputChange = (e) => {
-    setInput(e.target.value);
+    const value = e.target.value;
+    setInput(value);
 
-    // Show typing indicator when user starts typing
-    if (!isTyping && isInputFocused) {
+    // Update typing indicator
+    if (!isTyping && value.trim()) {
       setIsTyping(true);
     }
 
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Hide typing indicator after 2 seconds of no typing
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-    }, 2000);
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 2000);
   };
 
   const handleInputFocus = () => {
     setIsInputFocused(true);
-    if (input.trim() !== "") {
-      setIsTyping(true);
-    }
+    if (input.trim()) setIsTyping(true);
   };
 
   const handleInputBlur = () => {
     setIsInputFocused(false);
     setIsTyping(false);
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
+    clearTimeout(typingTimeoutRef.current);
   };
 
-  const sendMessage = () => {
-    if (input.trim() !== "" && ws.current?.readyState === WebSocket.OPEN) {
+  // Send message handler
+  const sendMessage = useCallback(() => {
+    if (!input.trim()) return;
+
+    if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
+      console.error("❌ WebSocket not connected");
+      return;
+    }
+
+    try {
       ws.current.send(input.trim());
       setInput("");
       setIsTyping(false);
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
+      clearTimeout(typingTimeoutRef.current);
+    } catch (error) {
+      console.error("❌ Error sending message:", error);
     }
-  };
+  }, [input]);
 
-  // Emoji reaction functions
-  const toggleEmojiPicker = (messageId) => {
-    setActiveEmojiPicker(activeEmojiPicker === messageId ? null : messageId);
-  };
+  // Emoji reactions
+  const toggleEmojiPicker = useCallback((messageId) => {
+    setActiveEmojiPicker(prev => prev === messageId ? null : messageId);
+  }, []);
 
-  const addReaction = (messageId, emoji) => {
+  const addReaction = useCallback((messageId, emoji) => {
     setMessages(prev => prev.map(msg => {
-      if (msg.message_id === messageId) {
-        const existingReactions = msg.reactions || {};
-        const userReactions = existingReactions[USER_ID] || [];
+      if (msg.message_id !== messageId) return msg;
 
-        // Toggle emoji reaction
-        const newUserReactions = userReactions.includes(emoji)
-          ? userReactions.filter(e => e !== emoji)
-          : [...userReactions, emoji];
+      const reactions = { ...(msg.reactions || {}) };
+      const userReactions = [...(reactions[USER_ID] || [])];
 
-        return {
-          ...msg,
-          reactions: {
-            ...existingReactions,
-            [USER_ID]: newUserReactions
-          }
-        };
+      // Toggle reaction
+      const index = userReactions.indexOf(emoji);
+      if (index > -1) {
+        userReactions.splice(index, 1);
+      } else {
+        userReactions.push(emoji);
       }
-      return msg;
+
+      return {
+        ...msg,
+        reactions: {
+          ...reactions,
+          [USER_ID]: userReactions
+        }
+      };
     }));
-
     setActiveEmojiPicker(null);
-  };
+  }, []);
 
-  const getReactionCount = (message, emoji) => {
+  // Utility functions for reactions
+  const getReactionCount = useCallback((message, emoji) => {
     if (!message.reactions) return 0;
-    return Object.values(message.reactions).flat().filter(e => e === emoji).length;
-  };
+    return Object.values(message.reactions)
+      .flat()
+      .filter(e => e === emoji)
+      .length;
+  }, []);
 
-  const hasUserReacted = (message, emoji) => {
-    if (!message.reactions || !message.reactions[USER_ID]) return false;
-    return message.reactions[USER_ID].includes(emoji);
-  };
+  const hasUserReacted = useCallback((message, emoji) => {
+    return message.reactions?.[USER_ID]?.includes(emoji) || false;
+  }, []);
 
-  // Insert emoji into input
-  const insertEmoji = (emoji) => {
-    setInput(prev => prev + emoji);
-    setShowInputEmojiPicker(false);
-  };
-
-  // Close emoji picker when clicking outside
+  // Close emoji pickers when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
@@ -169,54 +227,43 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Cleanup timeout on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
+      if (ws.current) ws.current.close();
+      clearTimeout(typingTimeoutRef.current);
     };
   }, []);
 
   return (
     <section className="flex flex-col flex-1 bg-gradient-to-br from-white to-gray-50 min-h-screen shadow-lg rounded-2xl border border-gray-200">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-gray-200 pb-3 sm:pb-4 px-4 sm:px-6 py-3 sm:py-4 bg-white shadow-sm">
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          {/* Mobile Menu Button */}
-          <button
-            onClick={onMenuClick}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-          >
-            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
-          {/* Mobile Chat List Button */}
-          <button
-            onClick={onChatListClick}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-          >
-            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-            </svg>
-          </button>
-
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <h2 className="text-base sm:text-lg font-bold text-gray-800">Ghệ Dít Pự</h2>
+      <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
+        {/* Left: Avatar + name + status */}
+        <div className="flex items-center space-x-3">
+          <img
+            className="w-10 h-10 rounded-full object-cover"
+            src={chat.img_url}
+            alt={chat.username}
+          />
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-gray-800">{chat.username}</span>
             <div className="flex items-center space-x-1">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              <span className="text-xs sm:text-sm text-gray-500">online</span>
+              <span className="text-xs text-gray-500">Online</span>
             </div>
           </div>
         </div>
 
+        {/* Center: Optional title (or leave empty to match Messenger) */}
+        <div className="hidden md:flex flex-1 justify-center">
+          {/* <h2 className="text-sm text-gray-600 font-medium">Messenger</h2> */}
+        </div>
+
+        {/* Right: Menu and actions call alibabababa*/}
         <div className="flex items-center space-x-1 sm:space-x-3 text-gray-400">
           <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
             <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,143 +285,129 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
-
-          {/* img user  */}
-          <div className="flex items-center -space-x-1 sm:-space-x-2">
-            <img
-              className="rounded-full border-2 border-white shadow-sm"
-              src="https://storage.googleapis.com/a1aa/image/4cf23f41-8a5f-4d21-7197-c7ae87377368.jpg"
-              width="35"
-              height="35"
-              alt="User"
-            />
-
-          </div>
         </div>
+
       </header>
 
+
       {/* Chat Messages */}
-      <div className="flex flex-col space-y-4 sm:space-y-6 overflow-y-auto px-4 bg-white sm:px-6 py-4 sm:py-6 h-[calc(100vh-150px)] scrollbar-hide">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto p-4 space-y-3 bg-white scrollbar-hide"
+      >
+        {messages.map((msg) => {
+          const isMe = msg.user_id === USER_ID;
+          const timeString = new Date(msg.created_at).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
 
-        {/* Outgoing Message */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-white scrollbar-hide">
-          {messages.map((msg) => {
-            const isMe = msg.user_id === USER_ID;
+          return (
+            <div
+              key={msg.message_id}
+              className={`flex ${isMe ? 'justify-end' : 'justify-start'} items-end space-x-2`}
+            >
+              {/* Avatar for others */}
+              {!isMe && (
+                <img
+                  className="rounded-full ring-2 ring-white shadow-sm flex-shrink-0"
+                  src={msg.img_url || '/default-avatar.jpg'}
+                  width="32"
+                  height="32"
+                  alt={msg.name_user || 'User'}
+                />
+              )}
 
-            return (
-              <div key={msg.message_id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} items-end space-x-2 sm:space-x-3`}>
-                {/* Avatar - chỉ hiển thị nếu không phải là mình */}
-                {!isMe && (
-                  <div className="flex-shrink-0">
-                    <img
-                      className="rounded-full ring-2 ring-white shadow-sm"
-                      src={msg.img_url || '/default-avatar.jpg'}
-                      width="32"
-                      height="32"
-                      alt={msg.name_user || 'User'}
-                    />
-                  </div>
-                )}
+              <div className={`flex flex-col items-${isMe ? 'end' : 'start'}`}>
+                <div
+                  className={`text-sm shadow-sm px-3 py-2 max-w-xs relative group
+                    ${isMe
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-br-md'
+                      : 'bg-gray-200 text-gray-900 rounded-2xl rounded-bl-md'}`}
+                >
+                  <p>{msg.content}</p>
 
-                {/* Message bubble */}
-                <div className={`flex flex-col items-${isMe ? 'end' : 'start'} space-y-1`}>
-                  <div
-                    className={`text-sm shadow-sm px-3 sm:px-4 py-2 sm:py-3 max-w-xs sm:max-w-md relative group
-                        ${isMe
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-br-md'
-                        : 'bg-gray-200 text-gray-900 rounded-2xl rounded-bl-md'}
-                        `}
+                  {/* Reaction button */}
+                  <button
+                    onClick={() => toggleEmojiPicker(msg.message_id)}
+                    className={`absolute -bottom-2 p-1.5 rounded-full opacity-0 group-hover:opacity-100 ${isMe
+                      ? 'bg-white/20 hover:bg-white/30 -left-4'
+                      : 'bg-gray-300/50 hover:bg-gray-400/50 -right-5'
+                      }`}
                   >
-                    <p>{msg.content}</p>
+                    <svg className="w-3 h-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
+                    </svg>
+                  </button>
 
-                    {/* Reaction button click to send emoji ( button )*/}
-                    <button
-                      onClick={() => toggleEmojiPicker(msg.message_id)}
-                      className={`absolute -bottom-2 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 ${isMe ? 'bg-white/20 hover:bg-white/30 -left-4' : 'bg-gray-300/50 hover:bg-gray-400/50 -right-5'
-                        }`}
-                      title="Add reaction"
+                  {/* Emoji picker */}
+                  {activeEmojiPicker === msg.message_id && (
+                    <div
+                      ref={emojiPickerRef}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-1 z-50 w-[110px]"
                     >
-                      <svg className="w-3 h-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
-                      </svg>
-                    </button>
-
-                    {/* Emoji picker */}
-                    {activeEmojiPicker === msg.message_id && (
-                      <div
-                        ref={emojiPickerRef}
-                        className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-1 z-50 w-[110px] flex flex-col items-center`}
-                        style={{ minWidth: 0 }}
-                      >
-                        <div className="grid grid-cols-3 gap-1">
-                          {EMOJIS.map((emoji, index) => (
-                            <button
-                              key={index}
-                              onClick={() => addReaction(msg.message_id, emoji)}
-                              className="p-1 hover:bg-gray-100 rounded-full text-base transition-all duration-150 hover:scale-110"
-                              title={emoji}
-                            >
-                              {emoji}
-                            </button>
-                          ))}
-                        </div>
+                      <div className="grid grid-cols-3 gap-1">
+                        {EMOJIS.map((emoji, index) => (
+                          <button
+                            key={index}
+                            onClick={() => addReaction(msg.message_id, emoji)}
+                            className="p-1 hover:bg-gray-100 rounded-full text-base hover:scale-110"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
                       </div>
-                    )}
-                  </div>
-
-                  {/* Reactions display */}
-                  {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {Array.from(new Set(Object.values(msg.reactions).flat())).map((emoji) => (
-                        <button
-                          key={emoji}
-                          onClick={() => addReaction(msg.message_id, emoji)}
-                          className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 transition-all duration-150 hover:scale-105 ${hasUserReacted(msg, emoji)
-                            ? 'bg-blue-100 text-blue-600 border border-blue-200 shadow-sm'
-                            : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 hover:border-gray-300'
-                            }`}
-                          title={`${emoji} (${getReactionCount(msg, emoji)})`}
-                        >
-                          <span className="text-sm">{emoji}</span>
-                          <span className="font-medium">{getReactionCount(msg, emoji)}</span>
-                        </button>
-                      ))}
                     </div>
                   )}
-
-                  <span className="text-xs font-extralight text-gray-400">
-                    {new Date(msg.created_at).toLocaleTimeString()}
-                  </span>
                 </div>
 
-                {/* Avatar - nếu là mình */}
-                {isMe && (
-                  <div className="flex-shrink-0">
-                    <img
-                      className="rounded-full ring-2 ring-white shadow-sm"
-                      src={msg.img_url || '/default-avatar.jpg'}
-                      width="32"
-                      height="32"
-                      alt="You"
-                    />
+                {/* Reactions display */}
+                {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {[...new Set(Object.values(msg.reactions).flat())].map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={() => addReaction(msg.message_id, emoji)}
+                        className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 ${hasUserReacted(msg, emoji)
+                          ? 'bg-blue-100 text-blue-600 border border-blue-200'
+                          : 'bg-gray-100 text-gray-600 border border-gray-200'
+                          }`}
+                      >
+                        <span className="text-sm">{emoji}</span>
+                        <span className="font-medium">{getReactionCount(msg, emoji)}</span>
+                      </button>
+                    ))}
                   </div>
                 )}
+
+                <span className="text-xs font-extralight text-gray-400 mt-1">
+                  {timeString}
+                </span>
               </div>
 
-            );
-          })}
-        </div>
-
+              {/* Avatar for self */}
+              {isMe && (
+                <img
+                  className="rounded-full ring-2 ring-white shadow-sm flex-shrink-0"
+                  src={msg.img_url || '/default-avatar.jpg'}
+                  width="32"
+                  height="32"
+                  alt="You"
+                />
+              )}
+            </div>
+          );
+        })}
 
         {/* Typing Indicator */}
         {isTyping && (
-          <div className="flex space-x-2 sm:space-x-3">
-            <div className="z-50 sm:w-8 sm:h-8 bg-gradient-to-b from-violet-700/80 to-blue-900/80 backdrop-blur-lg shadow-2xl border-r border-white/10 transform transition-transform duration-300 rounded-full flex items-center justify-center">
-              <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <div className="flex space-x-2">
+            <div className="z-50 w-8 h-8 bg-gradient-to-b from-violet-700/80 to-blue-900/80 rounded-full flex items-center justify-center">
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
               </svg>
             </div>
-            <div className="bg-gray-100 rounded-2xl rounded-tl-md px-3 sm:px-4 py-2 sm:py-3">
+            <div className="bg-gray-100 rounded-2xl rounded-tl-md px-3 py-2">
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -386,13 +419,19 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
       </div>
 
       {/* Message Input */}
-      <form className="flex items-center space-x-2 sm:space-x-3 border-t border-gray-200 pt-3 sm:pt-4 px-4 sm:px-6 pb-4 sm:pb-6 bg-white">
+      <form
+        className="flex items-center space-x-2 border-t border-gray-200 pt-3 px-4 pb-4 bg-white"
+        onSubmit={(e) => {
+          e.preventDefault();
+          sendMessage();
+        }}
+      >
         <button
           type="button"
-          className="p-1 sm:p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
+          className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
           title="Attach file"
         >
-          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
           </svg>
         </button>
@@ -403,24 +442,22 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
             onChange={handleInputChange}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            className="w-full rounded-full border border-gray-200 bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            className="w-full rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Type your message here..."
           />
 
-          {/* Emoji picker button in input */}
+          {/* Emoji picker button */}
           <button
             type="button"
-            onClick={() => setShowInputEmojiPicker(!showInputEmojiPicker)}
-            className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-            title="Add emoji"
+            onClick={() => setShowInputEmojiPicker(v => !v)}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
           >
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
             </svg>
           </button>
 
-          {/* Input emoji picker */}
+          {/* Emoji picker for input */}
           {showInputEmojiPicker && (
             <div
               ref={inputEmojiPickerRef}
@@ -431,9 +468,8 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
                   <button
                     key={index}
                     type="button"
-                    onClick={() => insertEmoji(emoji)}
-                    className="p-1 hover:bg-gray-100 rounded text-sm transition-all duration-150 hover:scale-110"
-                    title={emoji}
+                    onClick={() => setInput(prev => prev + emoji)}
+                    className="p-1 hover:bg-gray-100 rounded text-sm hover:scale-110"
                   >
                     {emoji}
                   </button>
@@ -445,9 +481,8 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
 
         <button
           type="submit"
-          onClick={sendMessage}
-          disabled={input.trim() === ""}
-          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm font-medium hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          disabled={!input.trim()}
+          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:from-blue-600 hover:to-purple-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Send
         </button>

@@ -10,6 +10,8 @@ import "../globals.css"; // Import global styles
 const PageRoot = () => {
   const [rightPanelWidth, setRightPanelWidth] = useState(320);
   const [isResizing, setIsResizing] = useState(false);
+  const [roomSelectAtChatList, setRoomSelectAtChatList] = useState('');
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,11 +49,11 @@ const PageRoot = () => {
       <div className="flex flex-1 flex-col md:flex-row" ref={containerRef}>
 
         <div className="hidden md:flex w-[400px] flex-shrink-0 h-screen border-r border-gray-200 bg-white">
-          <ChatList />
+          <ChatList selectRoomId={setRoomSelectAtChatList} />
         </div>
 
         <div className="flex flex-1 flex-col relative min-h-screen bg-white">
-          <ChatWindow onMenuClick={undefined} onChatListClick={undefined} />
+          <ChatWindow onMenuClick={undefined} onChatListClick={undefined} chat={roomSelectAtChatList} />
 
           {/* column edit size */}
           <div

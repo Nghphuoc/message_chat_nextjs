@@ -2,8 +2,11 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchOldMessages } from "@/app/service/MessageService"; // Import your service to fetch old messages
 import "../../css/hiddenscroll.css"; // Import custom scrollbar styles
-const USER_ID = "11604a5a-1713-4a0f-b2fa-d2768ca56fed"; // 👈 đổi theo người dùng thật
-const ROOM_ID = "c98dbe8d-f615-4c6e-a79d-5c55a036a63c";
+// const USER_ID = "11604a5a-1713-4a0f-b2fa-d2768ca56fed"; // 👈 đổi theo người dùng thật
+// const ROOM_ID = "c98dbe8d-f615-4c6e-a79d-5c55a036a63c";
+
+const USER_ID = "20121a18-deec-4229-bfd6-baaed28e18ee"; // 👈 đổi theo người dùng thật
+const ROOM_ID = "f22e1d39-8a5f-4ada-8851-d3558f640bb2";
 
 // Emoji data
 const EMOJIS = [
@@ -245,7 +248,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
               height="35"
               alt="User"
             />
-            
+
           </div>
         </div>
       </header>
@@ -278,7 +281,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
                   <div
                     className={`text-sm shadow-sm px-3 sm:px-4 py-2 sm:py-3 max-w-xs sm:max-w-md relative group
                         ${isMe
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-tr-md'
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-br-md'
                         : 'bg-gray-200 text-gray-900 rounded-2xl rounded-bl-md'}
                         `}
                   >
@@ -287,7 +290,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick }) {
                     {/* Reaction button click to send emoji ( button )*/}
                     <button
                       onClick={() => toggleEmojiPicker(msg.message_id)}
-                      className={`absolute -bottom-2 -right-2 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 ${isMe ? 'bg-white/20 hover:bg-white/30' : 'bg-gray-300/50 hover:bg-gray-400/50'
+                      className={`absolute -bottom-2 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 ${isMe ? 'bg-white/20 hover:bg-white/30 -left-4' : 'bg-gray-300/50 hover:bg-gray-400/50 -right-5'
                         }`}
                       title="Add reaction"
                     >

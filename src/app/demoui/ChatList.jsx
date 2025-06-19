@@ -122,27 +122,7 @@ const filterChatList = (searchValue) => {
 
         {/* Chat List */}
         <ul className="flex flex-col space-y-2 sm:space-y-3 h-96 overflow-y-auto scrollbar-thin scrollbar-hide" style={{ maxHeight: "500px" }}>
-          {/* Sample Message */}
-          <li className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 cursor-pointer group">
-            <div className="relative">
-              <img
-                className="rounded-full ring-2 ring-white shadow-sm group-hover:ring-blue-200 transition-all duration-200"
-                src="https://storage.googleapis.com/a1aa/image/44c5dedb-c60c-47f5-04c5-d3cd4b60e8da.jpg"
-                width="36"
-                height="36"
-                alt="Suneo"
-              />
-              <div className="absolute -bottom-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full animate-pulse"></div>
-            </div>
-            <div className="flex flex-col flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-800 truncate">Suneo Marinir</p>
-              <p className="text-xs text-blue-600 font-medium">Suneo is typing...</p>
-            </div>
-            <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-sm">
-              2
-            </div>
-          </li>
-
+        
           {/* Additional sample chats */}
           {chatList.map((chat) => (
             <li
@@ -166,6 +146,7 @@ const filterChatList = (searchValue) => {
                 )}
                 <div className="absolute -bottom-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full animate-pulse"></div>
               </div>
+              
               <div className="flex flex-col flex-1 min-w-0">
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-semibold text-gray-800 truncate">{chat.username}</p>
@@ -178,6 +159,7 @@ const filterChatList = (searchValue) => {
                   {chat.unread || 0}
                 </div>
               )}
+              
             </li>
           ))}
 

@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { fetchChatList } from '@/app/service/ChatListService';
 
-const USER_ID = "20121a18-deec-4229-bfd6-baaed28e18ee"
+const USER_ID = "64ee176b-ef44-4c42-937d-aba39ed0d253"
 
 export default function ChatList({selectRoomId}) {
   const [search, setSearch] = React.useState("");

@@ -2,6 +2,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { fetchOldMessages } from "@/app/service/MessageService";
 import "../../css/hiddenscroll.css";
+import ScrollToBottomButton from "@/app/comom/scrollbutton";
+import { GoPaperAirplane } from "react-icons/go";
 
 // Emoji data
 const EMOJIS = [
@@ -9,7 +11,7 @@ const EMOJIS = [
 ];
 
 export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
-  const USER_ID = "20121a18-deec-4229-bfd6-baaed28e18ee";
+  const USER_ID = "64ee176b-ef44-4c42-937d-aba39ed0d253";
   const ROOM_ID = chat.room_id;
 
   const messageCache = useRef({});
@@ -20,6 +22,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [activeEmojiPicker, setActiveEmojiPicker] = useState(null);
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false);
+  const [buttonScroll, setButtonScroll] = useState(false);
 
   const ws = useRef(null);
   const scrollRef = useRef(null);
@@ -107,6 +110,22 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
       });
     }
   }, [messages]);
+
+
+  const scrollToBottom = () => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  };
+  // button scroll logic ( show when scroll up )
+  useEffect(() => {
+    const handleScroll = () => {
+      const bottom =
+        Math.ceil(window.innerHeight + window.scrollY) >= document.body.scrollHeight;
+      setButtonScroll(!bottom);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Load messages with caching
   const fetchMessages = useCallback(async () => {
@@ -484,9 +503,10 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
           disabled={!input.trim()}
           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:from-blue-600 hover:to-purple-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Send
+          <GoPaperAirplane />
         </button>
       </form>
+      <ScrollToBottomButton scrollRef={scrollRef} />
     </section>
   );
 }

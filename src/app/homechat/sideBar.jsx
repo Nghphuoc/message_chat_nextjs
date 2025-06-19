@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   faBolt,
   faUser,
@@ -12,6 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   const navItems = [
     { icon: faUser, label: 'Profile' },
@@ -20,6 +22,13 @@ export default function Sidebar() {
     { icon: faQuestionCircle, label: 'Help' },
     { icon: faSignOutAlt, label: 'Logout' },
   ];
+
+  const logout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('chat');
+    router.push('/authorization/login');
+  };
 
   return (
     <>
@@ -48,6 +57,7 @@ export default function Sidebar() {
               key={idx}
               className="group relative flex items-center justify-center w-12 h-12 mx-auto rounded-xl transition-all duration-300 hover:bg-white/20 hover:backdrop-blur-sm hover:scale-110"
               title={item.label}
+              onClick={item.label === 'Logout' ? logout : undefined}
             >
               <FontAwesomeIcon
                 icon={item.icon}

@@ -2,23 +2,26 @@
 import React, { useEffect } from "react";
 import { fetchChatList } from '@/app/service/ChatListService';
 
-const USER_ID = "64ee176b-ef44-4c42-937d-aba39ed0d253"
-
-export default function ChatList({selectRoomId}) {
+export default function ChatList({ selectRoomId }) {
+  const [user, setUser] = React.useState(null);
   const [search, setSearch] = React.useState("");
   const [chatList, setChatList] = React.useState([]);
-  const [chatData, setChatData] = React.useState([])
+  const [chatData, setChatData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
 
   useEffect(() => {
-    fetchData();
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      fetchData(parsedUser.user_id);
+    }
   }, []);
 
-  // Fetch chat list data
-  const fetchData = async () => {
+  const fetchData = async (userId) => {
     try {
-      const data = await fetchChatList(USER_ID);
+      const data = await fetchChatList(userId);
       setChatData(data);
       setChatList(data);
     } catch (error) {
@@ -33,15 +36,20 @@ export default function ChatList({selectRoomId}) {
     console.log("Selected room ID:", chat);
   };
 
-const filterChatList = (searchValue) => {
-  const lowerSearch = searchValue.toLowerCase();
-  setChatList(
-    chatData.filter(chat =>
-      chat.username.toLowerCase().includes(lowerSearch)
-    )
-  );
-};
+  const filterChatList = (searchValue) => {
+    const lowerSearch = searchValue.toLowerCase();
+    setChatList(
+      chatData.filter(chat =>
+        chat.username.toLowerCase().includes(lowerSearch)
+      )
+    );
+  };
 
+  if (!user) {
+    return <div className="p-4 text-gray-500">Loading user...</div>;
+  }
+
+  // The rest of your UI (return block) remains unchanged
 
   return (
     <div className="hidden md:flex ml-[80px] w-80 flex-col border-r border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-lg">
@@ -51,15 +59,15 @@ const filterChatList = (searchValue) => {
           <div className="relative">
             <img
               className="rounded-full ring-4 ring-white shadow-lg"
-              src="https://storage.googleapis.com/a1aa/image/e15f9630-bf6e-41b6-90e8-2df7a4517e02.jpg"
+              src={user.img_url}
               width="40"
               height="40"
-              alt="Rohmad Khoir"
+              alt={user.display_name}
             />
             <div className="absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-gray-800 truncate">Rohmad Khoir</p>
+            <p className="text-sm font-bold text-gray-800 truncate">{user.display_name}</p>
             <p className="text-xs text-gray-500">Online</p>
           </div>
         </div>
@@ -110,9 +118,9 @@ const filterChatList = (searchValue) => {
             placeholder="Search conversations..."
             value={search}
             onChange={(e) => {
-            const value = e.target.value;
-            setSearch(value);
-            filterChatList(value);
+              const value = e.target.value;
+              setSearch(value);
+              filterChatList(value);
             }}
           />
           <svg className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +130,7 @@ const filterChatList = (searchValue) => {
 
         {/* Chat List */}
         <ul className="flex flex-col space-y-2 sm:space-y-3 h-96 overflow-y-auto scrollbar-thin scrollbar-hide" style={{ maxHeight: "500px" }}>
-        
+
           {/* Additional sample chats */}
           {chatList.map((chat) => (
             <li
@@ -146,7 +154,7 @@ const filterChatList = (searchValue) => {
                 )}
                 <div className="absolute -bottom-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full animate-pulse"></div>
               </div>
-              
+
               <div className="flex flex-col flex-1 min-w-0">
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-semibold text-gray-800 truncate">{chat.username}</p>
@@ -159,7 +167,7 @@ const filterChatList = (searchValue) => {
                   {chat.unread || 0}
                 </div>
               )}
-              
+
             </li>
           ))}
 

@@ -12,23 +12,44 @@ const EMOJIS = [
 
 export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   const USER_ID = "64ee176b-ef44-4c42-937d-aba39ed0d253";
-  const ROOM_ID = chat.room_id;
 
-  const messageCache = useRef({});
-  const connectionRef = useRef(null);
+  // Khởi tạo null, sẽ lấy lại sau ở client
+  const [dataRoom, setDataRoom] = useState(chat ?? null);
+
+  // Khi chat param thay đổi (VD: chuyển phòng), cập nhật lại sessionStorage và state
+  useEffect(() => {
+    if (chat && chat.room_id) {
+      sessionStorage.setItem("chat", JSON.stringify(chat));
+      setDataRoom(chat);
+    } else if (!chat) {
+      // Nếu không có chat param, thử lấy lại từ sessionStorage
+      const savedOldChat = sessionStorage.getItem("chat");
+      if (savedOldChat) {
+        try {
+          setDataRoom(JSON.parse(savedOldChat));
+        } catch {
+          setDataRoom(null);
+        }
+      }
+    }
+  }, [chat]);
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [activeEmojiPicker, setActiveEmojiPicker] = useState(null);
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false);
-  const [buttonScroll, setButtonScroll] = useState(false);
 
+  const messageCache = useRef({});
+  const connectionRef = useRef(null);
   const ws = useRef(null);
   const scrollRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const emojiPickerRef = useRef(null);
   const inputEmojiPickerRef = useRef(null);
+
+  const ROOM_ID = dataRoom?.room_id;
 
   // WebSocket connection management
   useEffect(() => {
@@ -110,22 +131,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
       });
     }
   }, [messages]);
-
-
-  const scrollToBottom = () => {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-  };
-  // button scroll logic ( show when scroll up )
-  useEffect(() => {
-    const handleScroll = () => {
-      const bottom =
-        Math.ceil(window.innerHeight + window.scrollY) >= document.body.scrollHeight;
-      setButtonScroll(!bottom);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Load messages with caching
   const fetchMessages = useCallback(async () => {
@@ -265,11 +270,11 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         <div className="flex items-center space-x-3">
           <img
             className="w-10 h-10 rounded-full object-cover"
-            src={chat.img_url}
-            alt={chat.username}
+            src={dataRoom.img_url}
+            alt={dataRoom.username}
           />
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-gray-800">{chat.username}</span>
+            <span className="text-xl font-semibold text-gray-800">{dataRoom.username}</span>
             <div className="flex items-center space-x-1">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
               <span className="text-xs text-gray-500">Online</span>

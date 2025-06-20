@@ -1,34 +1,42 @@
 'use client';
+
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import clsx from 'clsx';
 import Sidebar from './sideBar';
 import ChatList from './ChatList';
 import ChatWindow from './chatWindow';
 import RightPanel from './rightPanel';
-import { useEffect, useRef, useState } from 'react';
-import clsx from 'clsx';
-import "../globals.css"; // Import global styles
-import { useRouter } from 'next/navigation';
-
+import "../globals.css";
 
 const PageRoot = () => {
   const [rightPanelWidth, setRightPanelWidth] = useState(320);
   const [isResizing, setIsResizing] = useState(false);
   const [roomSelectAtChatList, setRoomSelectAtChatList] = useState(null);
+  const [checkedListChat, setCheckedListChat] = useState(true);
   const [user, setUser] = useState(null);
   const [userChecked, setUserChecked] = useState(false);
-  const [checkedListChat, setCheckedListChat] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+  // Load user from localStorage
+  const loadUser = useCallback(() => {
+    const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (err) {
+        console.error("Error parsing user data:", err);
+        localStorage.removeItem('user');
+      }
     }
-    setUserChecked(true); // Mark check complete
+    setUserChecked(true);
   }, []);
 
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
 
   useEffect(() => {
     if (userChecked && !user) {
@@ -36,6 +44,7 @@ const PageRoot = () => {
     }
   }, [user, userChecked, router]);
 
+  // Handle Resizing
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing || !containerRef.current) return;
@@ -43,17 +52,17 @@ const PageRoot = () => {
       const containerRight = containerRef.current.getBoundingClientRect().right;
       const newWidth = containerRight - e.clientX;
 
-      if (newWidth >= 200 && newWidth <= 500) {
+      if (newWidth >= 240 && newWidth <= 480) {
         setRightPanelWidth(newWidth);
       }
     };
 
-    const handleMouseUp = () => {
-      setIsResizing(false);
-    };
+    const handleMouseUp = () => setIsResizing(false);
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
@@ -62,36 +71,44 @@ const PageRoot = () => {
   }, [isResizing]);
 
   if (!userChecked) {
-    return <div className="flex items-center justify-center bg-amber-50 h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-r from-sky-100 to-blue-200 text-gray-600">
+        Loading user...
+      </div>
+    );
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-tr from-sky-50 to-blue-100 overflow-hidden">
-
-      <div className="flex-shrink-0 hidden md:flex h-screen border-r border-gray-200 bg-white">
+    <div className="flex h-screen overflow-hidden bg-gradient-to-tr from-sky-50 to-blue-100">
+      {/* Sidebar */}
+      <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white shadow-sm">
         <Sidebar onChatsClick={() => setCheckedListChat(prev => !prev)} />
       </div>
 
+      {/* Main Container */}
       <div className="flex flex-1 flex-col md:flex-row" ref={containerRef}>
 
-        <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white transition-all duration-300">
-          {checkedListChat ? (<ChatList selectRoomId={setRoomSelectAtChatList} />) : (<div></div>)}
+        {/* Chat List */}
+        <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white transition-all duration-300 ease-in-out">
+          {checkedListChat && <ChatList selectRoomId={setRoomSelectAtChatList} />}
         </div>
 
-        <div className="flex flex-1 flex-col relative min-h-screen bg-white">
+        {/* Chat Window */}
+        <div className="flex flex-1 flex-col relative bg-white min-h-screen overflow-hidden">
           <ChatWindow onMenuClick={undefined} onChatListClick={undefined} chat={roomSelectAtChatList} />
 
-          {/* column edit size */}
+          {/* Resize Handle */}
           <div
             onMouseDown={() => setIsResizing(true)}
-            className="hidden lg:block absolute top-0 right-0 h-full w-1 cursor-col-resize bg-gray-300 hover:bg-blue-200 transition-colors duration-200 z-10"
-          />
+            className="hidden lg:block absolute top-0 right-0 h-full w-2 cursor-col-resize z-20"
+          >
+          </div>
         </div>
 
-        {/* Right Panel - controlled transition */}
+        {/* Right Panel */}
         <div
           className={clsx(
-            'hidden lg:flex flex-shrink-0 h-screen bg-white border-l border-gray-200',
+            'hidden lg:flex flex-shrink-0 h-screen border-l border-gray-200 bg-white',
             !isResizing && 'transition-all duration-300 ease-in-out'
           )}
           style={{ width: `${rightPanelWidth}px` }}

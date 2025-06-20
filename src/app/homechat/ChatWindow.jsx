@@ -285,32 +285,34 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     <section className="flex flex-col flex-1 bg-gradient-to-br from-white to-gray-50 min-h-screen shadow-lg rounded-2xl border border-gray-200">
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center space-x-2 py-2">
+
+        {/* Left: Avatar + Username + Status */}
+        <div className="flex items-center space-x-3 min-w-0">
           {/* Back button - mobile only */}
           <div className="md:hidden cursor-pointer right-1.5">
             <GoArrowLeft className="w-5 h-5 text-gray-500" />
           </div>
 
-          {/* Avatar + name + status */}
-          <div className="flex items-center space-x-3">
-            <img
-              className="w-10 h-10 rounded-full object-cover"
-              src={dataRoom.img_url}
-              alt={dataRoom.username}
-            />
-            <div className="flex flex-col">
-              <span className="text-xl font-semibold text-gray-800">{dataRoom.username}</span>
-              <div className="flex items-center space-x-1">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <span className="text-xs text-gray-500">Online</span>
-              </div>
+          <img
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+            src={dataRoom.img_url}
+            alt={dataRoom.username}
+          />
+
+          <div className="flex flex-col min-w-0">
+            <span
+              className="text-base sm:text-lg font-semibold text-gray-800 truncate max-w-[150px] sm:max-w-[180px]"
+              title={dataRoom.username}
+            >
+              {dataRoom.username}
+            </span>
+            <div className="flex items-center space-x-1">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="text-xs text-gray-500">Online</span>
             </div>
           </div>
         </div>
-        {/* Center: Optional title (or leave empty to match Messenger) */}
-        <div className="hidden md:flex flex-1 justify-center">
-          {/* <h2 className="text-sm text-gray-600 font-medium">Messenger</h2> */}
-        </div>
+
         {/* Right: Menu and actions */}
         <div className="flex items-center space-x-1 sm:space-x-3 text-gray-400">
           <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
@@ -335,6 +337,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
           </button>
         </div>
       </header>
+
       {/* Chat Messages */}
       <div
         ref={scrollRef}

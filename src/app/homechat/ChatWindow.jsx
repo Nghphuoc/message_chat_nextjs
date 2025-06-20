@@ -4,6 +4,7 @@ import { fetchOldMessages } from "@/app/service/MessageService";
 import "../../css/hiddenscroll.css";
 import ScrollToBottomButton from "@/app/comom/scrollbutton";
 import { GoPaperAirplane } from "react-icons/go";
+import { GoArrowLeft } from "react-icons/go";
 
 
 // Emoji data
@@ -12,10 +13,9 @@ const EMOJIS = [
 ];
 
 export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
-
   const [user, setUser] = useState(null);
   useEffect(() => {
-    const storedUser = localStorage.getItem("user"); 
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
@@ -285,18 +285,25 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     <section className="flex flex-col flex-1 bg-gradient-to-br from-white to-gray-50 min-h-screen shadow-lg rounded-2xl border border-gray-200">
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
-        {/* Left: Avatar + name + status */}
-        <div className="flex items-center space-x-3">
-          <img
-            className="w-10 h-10 rounded-full object-cover"
-            src={dataRoom.img_url}
-            alt={dataRoom.username}
-          />
-          <div className="flex flex-col">
-            <span className="text-xl font-semibold text-gray-800">{dataRoom.username}</span>
-            <div className="flex items-center space-x-1">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              <span className="text-xs text-gray-500">Online</span>
+        <div className="flex items-center space-x-2 py-2">
+          {/* Back button - mobile only */}
+          <div className="md:hidden cursor-pointer right-1.5">
+            <GoArrowLeft className="w-5 h-5 text-gray-500" />
+          </div>
+
+          {/* Avatar + name + status */}
+          <div className="flex items-center space-x-3">
+            <img
+              className="w-10 h-10 rounded-full object-cover"
+              src={dataRoom.img_url}
+              alt={dataRoom.username}
+            />
+            <div className="flex flex-col">
+              <span className="text-xl font-semibold text-gray-800">{dataRoom.username}</span>
+              <div className="flex items-center space-x-1">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span className="text-xs text-gray-500">Online</span>
+              </div>
             </div>
           </div>
         </div>
@@ -358,7 +365,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
                 <div className={`flex flex-col items-${isMe ? 'end' : 'start'}`}>
                   <div
                     className={`text-sm shadow-sm px-3 py-2 max-w-xs relative group
-                    ${isMe
+                      ${isMe
                         ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-br-md'
                         : 'bg-gray-200 text-gray-900 rounded-2xl rounded-bl-md'}`}
                   >

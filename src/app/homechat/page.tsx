@@ -6,13 +6,33 @@ import RightPanel from './rightPanel';
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import "../globals.css"; // Import global styles
+import { useRouter } from 'next/navigation';
 
 const PageRoot = () => {
   const [rightPanelWidth, setRightPanelWidth] = useState(320);
   const [isResizing, setIsResizing] = useState(false);
-  const [roomSelectAtChatList, setRoomSelectAtChatList] = useState('');
+  const [roomSelectAtChatList, setRoomSelectAtChatList] = useState(null);
+  const [user, setUser] = useState(null);
+  const [userChecked, setUserChecked] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+    }
+    setUserChecked(true); // Mark check complete
+  }, []);
+
+
+  useEffect(() => {
+    if (userChecked && !user) {
+      router.push('/authorization/login');
+    }
+  }, [user, userChecked, router]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -38,6 +58,10 @@ const PageRoot = () => {
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isResizing]);
+
+  if (!userChecked) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
 
   return (
     <div className="flex h-screen bg-gradient-to-tr from-sky-50 to-blue-100 overflow-hidden">

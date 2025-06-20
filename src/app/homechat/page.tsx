@@ -8,12 +8,14 @@ import clsx from 'clsx';
 import "../globals.css"; // Import global styles
 import { useRouter } from 'next/navigation';
 
+
 const PageRoot = () => {
   const [rightPanelWidth, setRightPanelWidth] = useState(320);
   const [isResizing, setIsResizing] = useState(false);
   const [roomSelectAtChatList, setRoomSelectAtChatList] = useState(null);
   const [user, setUser] = useState(null);
   const [userChecked, setUserChecked] = useState(false);
+  const [checkedListChat, setCheckedListChat] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -67,13 +69,13 @@ const PageRoot = () => {
     <div className="flex h-screen bg-gradient-to-tr from-sky-50 to-blue-100 overflow-hidden">
 
       <div className="flex-shrink-0 hidden md:flex h-screen border-r border-gray-200 bg-white">
-        <Sidebar />
+        <Sidebar onChatsClick={() => setCheckedListChat(prev => !prev)} />
       </div>
 
       <div className="flex flex-1 flex-col md:flex-row" ref={containerRef}>
 
-        <div className="hidden md:flex w-[400px] flex-shrink-0 h-screen border-r border-gray-200 bg-white">
-          <ChatList selectRoomId={setRoomSelectAtChatList} />
+        <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white transition-all duration-300">
+          {checkedListChat ? (<ChatList selectRoomId={setRoomSelectAtChatList} />) : (<div></div>)}
         </div>
 
         <div className="flex flex-1 flex-col relative min-h-screen bg-white">

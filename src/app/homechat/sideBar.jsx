@@ -11,7 +11,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-export default function Sidebar() {
+export default function Sidebar({ onChatsClick }) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
@@ -57,7 +57,13 @@ export default function Sidebar() {
               key={idx}
               className="group relative flex items-center justify-center w-12 h-12 mx-auto rounded-xl transition-all duration-300 hover:bg-white/20 hover:backdrop-blur-sm hover:scale-110"
               title={item.label}
-              onClick={item.label === 'Logout' ? logout : undefined}
+              onClick={
+                item.label === 'Logout'
+                  ? logout
+                  : item.label === 'Chats'
+                    ? () => { if (onChatsClick) onChatsClick(); }
+                    : undefined
+              }
             >
               <FontAwesomeIcon
                 icon={item.icon}

@@ -11,7 +11,7 @@ export default function ChatList({ selectRoomId }) {
   const [error, setError] = React.useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);

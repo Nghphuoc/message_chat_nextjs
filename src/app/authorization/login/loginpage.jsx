@@ -23,9 +23,9 @@ export default function LoginPage() {
             }
             const response = await login(user);
             console.log('Login successful:', response);
-            // Store user data in local storage or context
-            localStorage.setItem('user', JSON.stringify(response.infor_user));
-            localStorage.setItem('token', response.access_token);
+            // Store user data in session storage or context
+            sessionStorage.setItem('user', JSON.stringify(response.infor_user));
+            sessionStorage.setItem('token', response.access_token);
             setIsLoading(false);
             router.push('/homechat'); // Redirect to dashboard or home page
             // Redirect to dashboard or home page

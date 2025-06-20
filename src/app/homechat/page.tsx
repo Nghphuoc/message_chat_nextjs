@@ -20,15 +20,15 @@ const PageRoot = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Load user from localStorage
+  // Load user from sessionStorage
   const loadUser = useCallback(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = sessionStorage.getItem('user');
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (err) {
         console.error("Error parsing user data:", err);
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('user');
       }
     }
     setUserChecked(true);

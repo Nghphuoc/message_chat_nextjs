@@ -71,11 +71,11 @@ export default function Sidebar() {
           ))}
         </nav>
 
-        {/* Spacer */}
-        <div className="flex-1"></div>
+        {/* Spacer */} 
+        <div className="flex-1 p-1.5"></div>
 
         {/* User Status */}
-        <div className="px-2 pb-6">
+        <div className="px-2 pb-14">
           <div className="w-12 h-12 mx-auto rounded-xl bg-white/10 flex items-center justify-center shadow-inner relative">
             <div className="w-3 h-3 bg-green-400 rounded-full animate-ping absolute"></div>
             <div className="w-3 h-3 bg-green-500 rounded-full"></div>

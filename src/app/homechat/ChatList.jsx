@@ -125,7 +125,7 @@ export default function ChatList({ selectRoomId }) {
         <div className="mb-4 sm:mb-6 relative">
           <input
             className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-700 pl-8 sm:pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-            placeholder="Search conversations..."
+            placeholder="Search Messages..."
             value={search}
             onChange={(e) => {
               const value = e.target.value;

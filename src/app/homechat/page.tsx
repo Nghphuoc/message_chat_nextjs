@@ -7,7 +7,28 @@ import Sidebar from './sideBar';
 import ChatList from './ChatList';
 import ChatWindow from './chatWindow';
 import RightPanel from './rightPanel';
+//import UserDetail from './UserDetail';
 import "../globals.css";
+
+// const mockUser = {
+//   user_id: '12345',
+//   username: 'john_doe',
+//   password: 'secret',
+//   email: 'john@example.com',
+//   phone: '0123456789',
+//   img_url: 'https://randomuser.me/api/portraits/men/32.jpg',
+//   display_name: 'John Doe',
+//   created_at: new Date().toISOString(),
+//   role: { name: 'User' },
+//   flagDelete: false,
+// };
+// const mockOption = {
+//   img_url: 'https://randomuser.me/api/portraits/men/32.jpg',
+//   username: 'john_doe',
+//   room_id: 'room_001',
+//   status: true,
+//   last_seen: new Date().toISOString(),
+// };
 
 const PageRoot = () => {
   const [rightPanelWidth, setRightPanelWidth] = useState(320);
@@ -79,44 +100,68 @@ const PageRoot = () => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-tr from-sky-50 to-blue-100">
-      {/* Sidebar */}
-      <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white shadow-sm">
-        <Sidebar onChatsClick={() => setCheckedListChat(prev => !prev)} />
-      </div>
+    <>
+      {/* <div className='bg-pink-300'>
+      <UserDetail user={mockUser} option={mockOption} />
+      </div> */}
 
-      {/* Main Container */}
-      <div className="flex flex-1 flex-col md:flex-row" ref={containerRef}>
-
-        {/* Chat List */}
-        <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white transition-all duration-300 ease-in-out">
-          {checkedListChat && <ChatList selectRoomId={setRoomSelectAtChatList} />}
+      <div className="flex h-screen overflow-hidden bg-gradient-to-tr from-sky-50 to-blue-100">
+        {/* Sidebar */}
+        <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white shadow-sm">
+          <Sidebar onChatsClick={() => setCheckedListChat(prev => !prev)} />
         </div>
 
-        {/* Chat Window */}
-        <div className="flex flex-1 flex-col relative bg-white min-h-screen overflow-hidden">
-          <ChatWindow onMenuClick={undefined} onChatListClick={undefined} chat={roomSelectAtChatList} />
+        {/* Main Container */}
+        <div className="flex flex-1 flex-col md:flex-row" ref={containerRef}>
 
-          {/* Resize Handle */}
+          {checkedListChat && (
+            <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white transition-all duration-300 ease-in-out transform tracking-widest transform-fill">
+              <ChatList selectRoomId={setRoomSelectAtChatList} />
+            </div>
+          )}
+
+          {/* Chat Window */}
+          {checkedListChat ? (<div className="flex flex-1 flex-col relative bg-white min-h-screen overflow-hidden">
+            <ChatWindow
+              onMenuClick={() => setCheckedListChat(!checkedListChat)}
+              onChatListClick={() => setRoomSelectAtChatList(null)}
+              chat={roomSelectAtChatList}
+            />
+
+            {/* Resize Handle */}
+            <div
+              onMouseDown={() => setIsResizing(true)}
+              className="hidden lg:block absolute top-0 right-0 h-full w-2 cursor-col-resize z-20"
+            >
+            </div>
+          </div>) : (<div className="ml-[80px] flex flex-1 flex-col relative bg-white min-h-screen overflow-hidden">
+            <ChatWindow
+              onMenuClick={() => setCheckedListChat(!checkedListChat)}
+              onChatListClick={() => setRoomSelectAtChatList(null)}
+              chat={roomSelectAtChatList}
+            />
+
+            {/* Resize Handle */}
+            <div
+              onMouseDown={() => setIsResizing(true)}
+              className="hidden lg:block absolute top-0 right-0 h-full w-2 cursor-col-resize z-20"
+            >
+            </div>
+          </div>)}
+
+          {/* Right Panel */}
           <div
-            onMouseDown={() => setIsResizing(true)}
-            className="hidden lg:block absolute top-0 right-0 h-full w-2 cursor-col-resize z-20"
+            className={clsx(
+              'hidden lg:flex flex-shrink-0 h-screen border-l border-gray-200 bg-white',
+              !isResizing && 'transition-all duration-300 ease-in-out'
+            )}
+            style={{ width: `${rightPanelWidth}px` }}
           >
+            <RightPanel />
           </div>
         </div>
-
-        {/* Right Panel */}
-        <div
-          className={clsx(
-            'hidden lg:flex flex-shrink-0 h-screen border-l border-gray-200 bg-white',
-            !isResizing && 'transition-all duration-300 ease-in-out'
-          )}
-          style={{ width: `${rightPanelWidth}px` }}
-        >
-          <RightPanel />
-        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -5,7 +5,16 @@ import "../../css/hiddenscroll.css";
 import ScrollToBottomButton from "@/app/comom/scrollbutton";
 import { GoPaperAirplane } from "react-icons/go";
 import { GoArrowLeft } from "react-icons/go";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/vi';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(relativeTime);
+dayjs.locale('vi');
 
 // Emoji data
 const EMOJIS = [
@@ -307,175 +316,187 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
               {dataRoom.username}
             </span>
             <div className="flex items-center space-x-1">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              <span className="text-xs text-gray-500">Online</span>
-            </div>
+              {
+              dataRoom.status ? (
+                <>
+                < span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"/>
+                <span className="text-xs text-gray-500">Online</span>
+                </>
+              ) :
+              (
+                <>
+                <span className="text-xs text-gray-500">Offline</span>
+                <span className="text-xs text-gray-500">{dayjs(dataRoom.last_seen).tz('Asia/Ho_Chi_Minh').fromNow()}</span>
+                </>
+              )
+              }
           </div>
         </div>
+      </div>
 
-        {/* Right: Menu and actions */}
-        <div className="flex items-center space-x-1 sm:space-x-3 text-gray-400">
-          <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </button>
-          <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-            </svg>
-          </button>
-          <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </button>
-          <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-        </div>
-      </header>
+      {/* Right: Menu and actions */}
+      <div className="flex items-center space-x-1 sm:space-x-3 text-gray-400">
+        <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+        </button>
+        <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+          </svg>
+        </button>
+        <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+        </button>
+        <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
+    </header>
 
-      {/* Chat Messages */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 bg-white scrollbar-hide"
-      >
-        {messages && messages.length > 0 ? (
-          messages.map((msg) => {
-            const isMe = msg.user_id === USER_ID;
-            const timeString = new Date(msg.created_at).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            });
-            return (
+      {/* Chat Messages */ }
+  <div
+    ref={scrollRef}
+    className="flex-1 overflow-y-auto p-4 space-y-3 bg-white scrollbar-hide"
+  >
+    {messages && messages.length > 0 ? (
+      messages.map((msg) => {
+        const isMe = msg.user_id === USER_ID;
+        const timeString = new Date(msg.created_at).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        return (
+          <div
+            key={msg.message_id}
+            className={`flex ${isMe ? 'justify-end' : 'justify-start'} items-end space-x-2`}
+          >
+            {/* Avatar for others */}
+            {!isMe && (
+              <img
+                className="rounded-full ring-2 ring-white shadow-sm flex-shrink-0"
+                src={msg.img_url || '/default-avatar.jpg'}
+                width="32"
+                height="32"
+                alt={msg.name_user || 'User'}
+              />
+            )}
+            <div className={`flex flex-col items-${isMe ? 'end' : 'start'}`}>
               <div
-                key={msg.message_id}
-                className={`flex ${isMe ? 'justify-end' : 'justify-start'} items-end space-x-2`}
-              >
-                {/* Avatar for others */}
-                {!isMe && (
-                  <img
-                    className="rounded-full ring-2 ring-white shadow-sm flex-shrink-0"
-                    src={msg.img_url || '/default-avatar.jpg'}
-                    width="32"
-                    height="32"
-                    alt={msg.name_user || 'User'}
-                  />
-                )}
-                <div className={`flex flex-col items-${isMe ? 'end' : 'start'}`}>
-                  <div
-                    className={`text-sm shadow-sm px-3 py-2 max-w-xs relative group
+                className={`text-sm shadow-sm px-3 py-2 max-w-xs relative group
                       ${isMe
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-br-md'
-                        : 'bg-gray-200 text-gray-900 rounded-2xl rounded-bl-md'}`}
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-br-md'
+                    : 'bg-gray-200 text-gray-900 rounded-2xl rounded-bl-md'}`}
+              >
+                <p>{msg.content}</p>
+                {/* Reaction button */}
+                <button
+                  onClick={() => toggleEmojiPicker(msg.message_id)}
+                  className={`absolute -bottom-2 p-1.5 rounded-full opacity-0 group-hover:opacity-100 ${isMe
+                    ? 'bg-white/20 hover:bg-white/30 -left-4'
+                    : 'bg-gray-300/50 hover:bg-gray-400/50 -right-5'
+                    }`}
+                >
+                  <svg className="w-3 h-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
+                  </svg>
+                </button>
+                {/* Emoji picker */}
+                {activeEmojiPicker === msg.message_id && (
+                  <div
+                    ref={emojiPickerRef}
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-1 z-50 w-[110px]"
                   >
-                    <p>{msg.content}</p>
-                    {/* Reaction button */}
-                    <button
-                      onClick={() => toggleEmojiPicker(msg.message_id)}
-                      className={`absolute -bottom-2 p-1.5 rounded-full opacity-0 group-hover:opacity-100 ${isMe
-                        ? 'bg-white/20 hover:bg-white/30 -left-4'
-                        : 'bg-gray-300/50 hover:bg-gray-400/50 -right-5'
-                        }`}
-                    >
-                      <svg className="w-3 h-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
-                      </svg>
-                    </button>
-                    {/* Emoji picker */}
-                    {activeEmojiPicker === msg.message_id && (
-                      <div
-                        ref={emojiPickerRef}
-                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-1 z-50 w-[110px]"
-                      >
-                        <div className="grid grid-cols-3 gap-1">
-                          {EMOJIS.map((emoji, index) => (
-                            <button
-                              key={index}
-                              onClick={() => addReaction(msg.message_id, emoji)}
-                              className="p-1 hover:bg-gray-100 rounded-full text-base hover:scale-110"
-                            >
-                              {emoji}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  {/* Reactions display */}
-                  {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {[...new Set(Object.values(msg.reactions).flat())].map((emoji) => (
+                    <div className="grid grid-cols-3 gap-1">
+                      {EMOJIS.map((emoji, index) => (
                         <button
-                          key={emoji}
+                          key={index}
                           onClick={() => addReaction(msg.message_id, emoji)}
-                          className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 ${hasUserReacted(msg, emoji)
-                            ? 'bg-blue-100 text-blue-600 border border-blue-200'
-                            : 'bg-gray-100 text-gray-600 border border-gray-200'
-                            }`}
+                          className="p-1 hover:bg-gray-100 rounded-full text-base hover:scale-110"
                         >
-                          <span className="text-sm">{emoji}</span>
-                          <span className="font-medium">{getReactionCount(msg, emoji)}</span>
+                          {emoji}
                         </button>
                       ))}
                     </div>
-                  )}
-                  <span className="text-xs font-extralight text-gray-400 mt-1">
-                    {timeString}
-                  </span>
-                </div>
-                {/* Avatar for self */}
-                {isMe && (
-                  <img
-                    className="rounded-full ring-2 ring-white shadow-sm flex-shrink-0"
-                    src={msg.img_url || '/default-avatar.jpg'}
-                    width="32"
-                    height="32"
-                    alt="You"
-                  />
+                  </div>
                 )}
               </div>
-            );
-          })
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
-            <img
-              className="rounded-full ring-2 ring-white shadow-sm mb-4"
-              src={dataRoom.img_url || '/default-avatar.jpg'}
-              width="80"
-              height="80"
-              alt={dataRoom.username || 'User'}
-            />
-            <p className="text-sm font-medium">
-              No messages yet. Start the conversation with {dataRoom.username || 'this user'}!
-            </p>
-            <p className="text-xs font-extralight text-gray-400 mt-1">
-              Say hello 👋 or share something interesting to begin chatting.
-            </p>
-          </div>
-        )}
-        {/* Typing Indicator */}
-        {isTyping && (
-          <div className="flex space-x-2">
-            <div className="z-50 w-8 h-8 bg-gradient-to-b from-violet-700/80 to-blue-900/80 rounded-full flex items-center justify-center">
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-              </svg>
+              {/* Reactions display */}
+              {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {[...new Set(Object.values(msg.reactions).flat())].map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => addReaction(msg.message_id, emoji)}
+                      className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 ${hasUserReacted(msg, emoji)
+                        ? 'bg-blue-100 text-blue-600 border border-blue-200'
+                        : 'bg-gray-100 text-gray-600 border border-gray-200'
+                        }`}
+                    >
+                      <span className="text-sm">{emoji}</span>
+                      <span className="font-medium">{getReactionCount(msg, emoji)}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              <span className="text-xs font-extralight text-gray-400 mt-1">
+                {timeString}
+              </span>
             </div>
-            <div className="bg-gray-100 rounded-2xl rounded-tl-md px-3 py-2">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              </div>
-            </div>
+            {/* Avatar for self */}
+            {isMe && (
+              <img
+                className="rounded-full ring-2 ring-white shadow-sm flex-shrink-0"
+                src={msg.img_url || '/default-avatar.jpg'}
+                width="32"
+                height="32"
+                alt="You"
+              />
+            )}
           </div>
-        )}
+        );
+      })
+    ) : (
+      <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
+        <img
+          className="rounded-full ring-2 ring-white shadow-sm mb-4"
+          src={dataRoom.img_url || '/default-avatar.jpg'}
+          width="80"
+          height="80"
+          alt={dataRoom.username || 'User'}
+        />
+        <p className="text-sm font-medium">
+          No messages yet. Start the conversation with {dataRoom.username || 'this user'}!
+        </p>
+        <p className="text-xs font-extralight text-gray-400 mt-1">
+          Say hello 👋 or share something interesting to begin chatting.
+        </p>
       </div>
-      {/* Message Input */}
+    )}
+    {/* Typing Indicator */}
+    {isTyping && (
+      <div className="flex space-x-2">
+        <div className="z-50 w-8 h-8 bg-gradient-to-b from-violet-700/80 to-blue-900/80 rounded-full flex items-center justify-center">
+          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+          </svg>
+        </div>
+        <div className="bg-gray-100 rounded-2xl rounded-tl-md px-3 py-2">
+          <div className="flex space-x-1">
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+  {/* Message Input */ }
       <form
         className="flex items-center space-x-2 border-t border-gray-200 pt-3 px-4 pb-4 bg-white"
         onSubmit={(e) => {
@@ -541,6 +562,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         </button>
       </form>
       <ScrollToBottomButton scrollRef={scrollRef} />
-    </section>
+    </section >
   );
 }

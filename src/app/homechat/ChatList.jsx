@@ -1,6 +1,16 @@
 "use client";
 import React, { useEffect } from "react";
 import { fetchChatList } from '@/app/service/ChatListService';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/vi';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(relativeTime);
+dayjs.locale('vi');
 
 export default function ChatList({ selectRoomId }) {
   const [user, setUser] = React.useState(null);
@@ -152,15 +162,15 @@ export default function ChatList({ selectRoomId }) {
                     {chat.username.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <div className="absolute -bottom-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full animate-pulse"></div>
+                {chat.status && (<div className="absolute -bottom-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full animate-pulse"></div>)}
               </div>
 
               <div className="flex flex-col flex-1 min-w-0">
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-semibold text-gray-800 truncate">{chat.username}</p>
-                  <p className="text-xs text-gray-400">{chat.time || "No time available"}</p>
+                  <p className="text-xs text-gray-400">{!chat.status ? dayjs(chat.last_seen).tz('Asia/Ho_Chi_Minh').fromNow() : ""}</p>
                 </div>
-                <p className="text-xs text-gray-500 truncate">{chat.status || "No status available"}</p>
+                <p className="text-xs text-gray-500 truncate">{chat.status ? <span className="text-green-500">Online</span> : <span className="text-red-500">Offline</span>}</p>
               </div>
               {chat.unread > 0 && (
                 <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-sm">

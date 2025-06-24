@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { fetchOldMessages } from "@/app/service/MessageService";
+import { fetchOldMessages, sendIcon, removeIcon } from "@/app/service/MessageService";
 import "../../css/hiddenscroll.css";
 import ScrollToBottomButton from "@/app/comom/scrollbutton";
 import { GoPaperAirplane } from "react-icons/go";
@@ -63,6 +63,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [activeEmojiPicker, setActiveEmojiPicker] = useState(null);
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false);
+  const [isReacting, setIsReacting] = useState(false);
 
   const messageCache = useRef({});
   const connectionRef = useRef(null);
@@ -250,31 +251,93 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     setActiveEmojiPicker(prev => prev === messageId ? null : messageId);
   }, []);
 
-  const addReaction = useCallback((messageId, emoji) => {
-    setMessages(prev => prev.map(msg => {
-      if (msg.message_id !== messageId) return msg;
+  const addReaction = useCallback(async (messageId, emoji, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    // Prevent multiple simultaneous reactions
+    if (isReacting) return;
+    
+    try {
+      setIsReacting(true);
+      setMessages(prev => prev.map(msg => {
+        if (msg.message_id !== messageId) return msg;
 
-      const reactions = { ...(msg.reactions || {}) };
-      const userReactions = [...(reactions[USER_ID] || [])];
+        // Find if user already has this reaction
+        const existingReaction = msg.icon?.find(r => 
+          r.user_id === USER_ID && r.emoji === emoji
+        );
 
-      // Toggle reaction
-      const index = userReactions.indexOf(emoji);
-      if (index > -1) {
-        userReactions.splice(index, 1);
-      } else {
-        userReactions.push(emoji);
-      }
+        if (existingReaction) {
+          // Remove reaction optimistically
+          const updatedIcon = msg.icon.filter(r => r.reaction_id !== existingReaction.reaction_id);
+          
+          // Call API to remove reaction
+          removeIcon(existingReaction.reaction_id).catch(error => {
+            console.error('Failed to remove reaction:', error);
+            // Revert optimistic update on error
+            if (!msg.icon.find(r => r.reaction_id === existingReaction.reaction_id)) {
+              updatedIcon.push(existingReaction);
+            }
+          });
 
-      return {
-        ...msg,
-        reactions: {
-          ...reactions,
-          [USER_ID]: userReactions
+          return {
+            ...msg,
+            icon: updatedIcon
+          };
+        } else {
+          // Add reaction optimistically
+          const tempReaction = {
+            reaction_id: 'temp-' + Date.now(), // Temporary ID until we get the real one
+            user_id: USER_ID,
+            emoji: emoji
+          };
+          
+          // Call API to add reaction
+          sendIcon({ 
+            message_id: messageId.toString(), 
+            user_id: USER_ID.toString(), 
+            emoji 
+          }).then(response => {
+            // Update the message with the real reaction ID
+            setMessages(current => current.map(m => {
+              if (m.message_id !== messageId) return m;
+              return {
+                ...m,
+                icon: m.icon.map(r => 
+                  r.reaction_id === tempReaction.reaction_id 
+                    ? { ...r, reaction_id: response.reaction_id }
+                    : r
+                )
+              };
+            }));
+          }).catch(error => {
+            console.error('Failed to add reaction:', error);
+            // Revert optimistic update on error
+            setMessages(current => current.map(m => {
+              if (m.message_id !== messageId) return m;
+              return {
+                ...m,
+                icon: m.icon.filter(r => r.reaction_id !== tempReaction.reaction_id)
+              };
+            }));
+          });
+
+          return {
+            ...msg,
+            icon: [...(msg.icon || []), tempReaction]
+          };
         }
-      };
-    }));
-    setActiveEmojiPicker(null);
-  }, []);
+      }));
+      setActiveEmojiPicker(null);
+    } catch (error) {
+      console.error('Error handling reaction:', error);
+    } finally {
+      setIsReacting(false);
+    }
+  }, [USER_ID, isReacting]);
 
   // Utility functions for reactions
   const getReactionCount = useCallback((message, emoji) => {
@@ -361,7 +424,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
                 )}
 
                 <div
-
                   className={`flex ${isMe ? 'justify-end' : 'justify-start'} items-end space-x-2`}
                 >
                   {/* Avatar for others */}
@@ -408,8 +470,10 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
                             {EMOJIS.map((emoji, index) => (
                               <button
                                 key={index}
-                                onClick={() => addReaction(msg.message_id, emoji)}
-                                className="p-1 hover:bg-gray-200 rounded-full text-xl transition-transform transform hover:scale-110"
+                                onClick={(e) => addReaction(msg.message_id, emoji, e)}
+                                disabled={isReacting}
+                                className={`p-1 hover:bg-gray-200 rounded-full text-xl transition-transform transform hover:scale-110 
+                                ${isReacting ? 'opacity-50 cursor-not-allowed' : ''}`}
                               >
                                 {emoji}
                               </button>
@@ -419,25 +483,24 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
                       )}
                     </div>
 
-                    {/* Reactions display ( show )*/}
-
-                    {msg.icon && Object.keys(msg.icon.reaction_id).length > 0 && (
+                    {/* Reactions display */}
+                    {msg.icon && msg.icon.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
-                        <button
-                          key={msg.icon.reaction_id}
-                          onClick={() => {
-                            // TODO: Add API to toggle (add/remove) emoji reaction here
-                            addReaction(msg.message_id, msg.icon.emoji);
-                          }}
-                          className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 border transition-all
-                          ${isMe
+                        {msg.icon.map((reaction, index) => (
+                          <button
+                            key={`${reaction.reaction_id}-${index}`}
+                            onClick={(e) => addReaction(msg.message_id, reaction.emoji, e)}
+                            disabled={isReacting}
+                            className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 border transition-all
+                            ${reaction.user_id === USER_ID
                               ? 'bg-blue-100 text-blue-600 border-blue-200 font-bold'
                               : 'bg-gray-100 text-gray-600 border-gray-200'
-                            }`}
-                        >
-                          <span className="text-base">{msg.icon.emoji}</span>
-                          <span className="font-medium">1</span>
-                        </button>
+                            } ${isReacting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            <span className="text-base">{reaction.emoji}</span>
+                            <span className="font-medium">1</span>
+                          </button>
+                        ))}
                       </div>
                     )}
 

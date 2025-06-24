@@ -421,7 +421,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
                     {/* Reactions display ( show )*/}
 
-                    {msg.icon && Object.keys(msg.icon.reaction_id).length > 0 && (
+                    {/* {msg?.icon && Object.keys(msg.icon.reaction_id).length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
                         <button
                           key={msg.icon.reaction_id}
@@ -439,7 +439,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
                           <span className="font-medium">1</span>
                         </button>
                       </div>
-                    )}
+                    )} */}
 
                     <span className="text-xs font-extralight text-gray-400 mt-1">
                       {timeString}

@@ -32,7 +32,7 @@ export default function ScrollToBottomButton({ scrollRef }) {
     showButton && (
       <button
         onClick={scrollToBottom}
-        className="fixed bottom-15 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[500] bg-gray-300 hover:bg-blue-200 text-white p-4 rounded-full shadow-lg transition duration-300 "
+        className="z-[500] bg-gray-300 hover:bg-blue-200 text-white p-4 rounded-full shadow-lg transition duration-300"
         aria-label="Scroll to bottom"
       >
         <HiArrowDownCircle />

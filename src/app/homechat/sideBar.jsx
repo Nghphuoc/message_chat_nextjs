@@ -24,15 +24,15 @@ export default function Sidebar({ onChatsClick }) {
 
   const profile = () => {
     router.push("/#");
-  }
+  };
 
   const setting = () => {
     router.push("/#");
-  }
+  };
 
   const help = () => {
     router.push("/#");
-  }
+  };
 
   const navItems = [
     { icon: faUser, label: 'Profile', action: profile },

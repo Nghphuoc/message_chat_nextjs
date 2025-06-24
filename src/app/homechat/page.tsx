@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import Sidebar from './sideBar';
 import ChatList from './ChatList';
-import ChatWindow from './chatWindow';
+import ChatWindow from './ChatWindow';
 import RightPanel from './rightPanel';
 //import UserDetail from './UserDetail';
 import "../globals.css";

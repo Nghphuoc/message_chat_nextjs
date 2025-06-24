@@ -15,20 +15,32 @@ export default function Sidebar({ onChatsClick }) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
-  const navItems = [
-    { icon: faUser, label: 'Profile' },
-    { icon: faCommentAlt, label: 'Chats' },
-    { icon: faCog, label: 'Settings' },
-    { icon: faQuestionCircle, label: 'Help' },
-    { icon: faSignOutAlt, label: 'Logout' },
-  ];
-
   const logout = () => {
     sessionStorage.removeItem('user');
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('chat');
     router.push('/authorization/login');
   };
+
+  const profile = () => {
+    router.push("/#");
+  }
+
+  const setting = () => {
+    router.push("/#");
+  }
+
+  const help = () => {
+    router.push("/#");
+  }
+
+  const navItems = [
+    { icon: faUser, label: 'Profile', action: profile },
+    { icon: faCommentAlt, label: 'Chats', action: onChatsClick },
+    { icon: faCog, label: 'Settings', action: setting },
+    { icon: faQuestionCircle, label: 'Help', action: help },
+    { icon: faSignOutAlt, label: 'Logout', action: logout },
+  ];
 
   return (
     <>
@@ -57,19 +69,14 @@ export default function Sidebar({ onChatsClick }) {
               key={idx}
               className="group relative flex items-center justify-center w-12 h-12 mx-auto rounded-xl transition-all duration-300 hover:bg-white/20 hover:backdrop-blur-sm hover:scale-110"
               title={item.label}
-              onClick={
-                item.label === 'Logout'
-                  ? logout
-                  : item.label === 'Chats'
-                    ? () => { if (onChatsClick) onChatsClick(); }
-                    : undefined
-              }
+              onClick={() => {
+                if (typeof item.action === 'function') item.action();
+              }}
             >
               <FontAwesomeIcon
                 icon={item.icon}
                 className="text-white text-lg group-hover:text-blue-200 transition-colors duration-300"
               />
-              {/* Tooltip */}
               <span className="absolute left-full ml-3 px-3 py-1 bg-white/10 backdrop-blur text-black text-xs rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 hidden lg:block">
                 {item.label}
               </span>
@@ -77,7 +84,7 @@ export default function Sidebar({ onChatsClick }) {
           ))}
         </nav>
 
-        {/* Spacer */} 
+        {/* Spacer */}
         <div className="flex-1 p-1.5"></div>
 
         {/* User Status */}

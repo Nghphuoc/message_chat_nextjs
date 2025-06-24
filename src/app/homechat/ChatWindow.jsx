@@ -4,7 +4,6 @@ import { fetchOldMessages } from "@/app/service/MessageService";
 import "../../css/hiddenscroll.css";
 import ScrollToBottomButton from "@/app/comom/scrollbutton";
 import { GoPaperAirplane } from "react-icons/go";
-import { GoArrowLeft } from "react-icons/go";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -12,6 +11,9 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
 import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { GrEmoji } from "react-icons/gr";
+import { FiPaperclip } from "react-icons/fi";
+import HeaderChat from "../comom/headerchat";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -328,77 +330,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   return (
     <section className="flex flex-col flex-1 bg-gradient-to-br from-white to-gray-50 min-h-screen shadow-lg rounded-2xl border border-gray-200">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
-
-        {/* Left: Avatar + Username + Status */}
-        <div className="flex items-center space-x-3 min-w-0">
-          {/* Back button - mobile only */}
-          <div className="md:hidden cursor-pointer right-1.5">
-            <GoArrowLeft className="w-5 h-5 text-gray-500" />
-          </div>
-
-          <img
-            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-            src={dataRoom.img_url}
-            alt={dataRoom.username}
-          />
-
-          <div className="flex flex-col min-w-0">
-            <span
-              className="text-base sm:text-lg font-semibold text-gray-800 truncate max-w-[150px] sm:max-w-[180px]"
-              title={dataRoom.username}
-            >
-              {dataRoom.username}
-            </span>
-            <div className="flex items-center space-x-1">
-              {
-                dataRoom.status ? (
-                  <>
-                    < span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-xs text-gray-500">Online</span>
-                  </>
-                ) :
-                  (
-                    <>
-                      <span className="text-xs text-gray-500">Offline</span>
-                      <span className="text-xs text-gray-500">{dayjs(dataRoom.last_seen).tz('Asia/Ho_Chi_Minh').fromNow()}</span>
-                    </>
-                  )
-              }
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Menu and actions */}
-        <div className="flex items-center space-x-1 sm:space-x-3 text-gray-400">
-
-          <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </button>
-
-          <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-            </svg>
-          </button>
-
-          <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </button>
-
-          <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-
-        </div>
-      </header>
-
+      <HeaderChat dataRoom={dataRoom}/>
       {/* Chat Messages */}
       <div
         ref={scrollRef}
@@ -517,7 +449,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
                   {/* Avatar for self */}
 
-                  {isMe && (
+                  {/* {isMe && (
                     <img
                       className="rounded-full ring-2 ring-white shadow-sm flex-shrink-0"
                       src={msg.img_url || '/default-avatar.jpg'}
@@ -525,7 +457,8 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
                       height="25"
                       alt="You"
                     />
-                  )}
+                  )} */}
+
                 </div>
               </div>
             );
@@ -576,15 +509,19 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
           sendMessage();
         }}
       >
+
+        {/* button send file */}
         <button
           type="button"
           className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
           title="Attach file"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+          <svg className="w-4 h-4">
+            <FiPaperclip />
           </svg>
+          
         </button>
+        
         <div className="flex-1 relative">
           <input
             value={input}
@@ -600,17 +537,15 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
             onClick={() => setShowInputEmojiPicker(v => !v)}
             className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
           >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
-            </svg>
+            <GrEmoji/>
           </button>
           {/* Emoji picker for input */}
           {showInputEmojiPicker && (
             <div
               ref={inputEmojiPickerRef}
-              className="absolute bottom-10 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-1.5 z-50 w-[140px]"
+              className="absolute bottom-10 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-1.5 z-50 w-[200px]"
             >
-              <div className="grid grid-cols-3 gap-1 max-h-20 overflow-y-auto">
+              <div className="grid grid-cols-6 gap-1 max-h-40">
                 {EMOJIS.map((emoji, index) => (
                   <button
                     key={index}
@@ -627,6 +562,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         </div>
         <button
           type="submit"
+          title="send message"
           disabled={!input.trim()}
           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:from-blue-600 hover:to-purple-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >

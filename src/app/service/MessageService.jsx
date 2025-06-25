@@ -1,10 +1,11 @@
 import axios from 'axios';
+import { error } from 'console';
 
-const API_URL = 'http://localhost:8000/api/message';
+const API_URL = 'http://localhost:8000/api';
 
 export const fetchMessages = async (roomId, userId) => {
   try {
-    const response = await axios.get(`${API_URL}/${roomId}/${userId}`);
+    const response = await axios.get(`${API_URL}/message/${roomId}/${userId}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching messages:', error);
@@ -12,11 +13,10 @@ export const fetchMessages = async (roomId, userId) => {
   }
 }
 
-
 // get old message of a room
 export const fetchOldMessages = async (roomId) => {
     try {
-      const response = await axios.get(`${API_URL}/from_room/${roomId}`);
+      const response = await axios.get(`${API_URL}/message/from_room/${roomId}`);
       if (response.status !== 200) {
         console.log("Failed to fetch messages:", response.statusText);
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -25,4 +25,16 @@ export const fetchOldMessages = async (roomId) => {
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
+};
+
+export const sendIcon = async (reaction) => {
+  try {
+    const response = await axios.post(`${API_URL}/reaction/create`, reaction);
+    if ( response.status !== 201) {
+      console.log("Failed to fetch messages:", response.statusText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+      } 
+  } catch (error) {
+    console.error("error fetching sendIcon: ", error)
+  }
 };

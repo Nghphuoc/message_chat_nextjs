@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { error } from 'console';
 
 const API_URL = 'http://localhost:8000/api';
 

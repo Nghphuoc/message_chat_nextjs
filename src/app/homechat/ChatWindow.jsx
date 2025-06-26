@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { fetchOldMessages } from "@/app/service/MessageService";
+import { fetchOldMessages, sendIcon } from "@/app/service/MessageService";
 import "../../css/hiddenscroll.css";
 import ScrollToBottomButton from "@/app/comom/scrollbutton";
 import dayjs from 'dayjs';
@@ -13,6 +13,7 @@ import { vi } from 'date-fns/locale';
 import HeaderChat from "../comom/headerchat";
 import ShowMessage from "@/app/comom/showmessage";
 import InputChat from "@/app/comom/inputchat";
+import { useRouter } from 'next/navigation';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -25,6 +26,7 @@ const EMOJIS = [
 ];
 
 export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
+  const router = useRouter();
   const [user, setUser] = useState(null);
   const [dataRoom, setDataRoom] = useState(chat ?? null);
   const [messages, setMessages] = useState([]);
@@ -46,6 +48,9 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
+    } else {
+      // Redirect to login if user is not found
+      router.push('/authorization/login');
     }
   }, []);
 
@@ -128,6 +133,21 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     }
   }, [messages]);
 
+  const fetChingSendIcon = async (messageId, emoji, USER_ID) => {
+    const reaction = {
+      user_id: USER_ID,
+      message_id: messageId,
+      emoji: emoji,
+    };
+
+    try {
+      const data = await sendIcon(reaction);
+      console.log("data response: ", data);
+    } catch (error) {
+      console.error("error send Reaction: ", error);
+    }
+  };
+
   const fetchMessages = useCallback(async () => {
     if (!ROOM_ID) return;
     if (messageCache.current[ROOM_ID]) {
@@ -183,32 +203,50 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     setActiveEmojiPicker((prev) => (prev === messageId ? null : messageId));
   }, []);
 
-  const addReaction = useCallback(
-    (messageId, emoji) => {
-      setMessages((prev) =>
-        prev.map((msg) => {
-          if (msg.message_id !== messageId) return msg;
-          const reactions = { ...(msg.reactions || {}) };
-          const userReactions = [...(reactions[USER_ID] || [])];
-          const index = userReactions.indexOf(emoji);
-          if (index > -1) {
-            userReactions.splice(index, 1);
+  const addReaction = useCallback((messageId, emoji, USER_ID) => {
+    fetChingSendIcon(messageId, emoji, USER_ID);
+    setMessages((prev) =>
+
+      prev.map((msg) => {
+        if (msg.message_id !== messageId) return msg;
+
+        const reactions = { ...(msg.reactions || {}) };
+        const currentEmoji = reactions[USER_ID];
+        
+        let updatedIcon = Array.isArray(msg.icon) ? [...msg.icon] : [];
+
+        if (currentEmoji === emoji) {
+          // Gỡ bỏ reaction
+          // delete reactions[USER_ID];
+          // updatedIcon = updatedIcon.filter(r => r.user_id !== USER_ID);
+        } else {
+          // Gán reaction mới
+          reactions[USER_ID] = emoji;
+
+          // Nếu user đã có reaction trước đó → cập nhật emoji
+          const existed = updatedIcon.find(r => r.user_id === USER_ID);
+          if (existed) {
+            existed.emoji = emoji;
           } else {
-            userReactions.push(emoji);
+            updatedIcon.push({
+              message_id: messageId,
+              user_id: USER_ID,
+              reaction_id: crypto.randomUUID(), // hoặc tạm sinh gì đó
+              created_at: new Date().toISOString(),
+              emoji: emoji,
+            });
           }
-          return {
-            ...msg,
-            reactions: {
-              ...reactions,
-              [USER_ID]: userReactions,
-            },
-          };
-        })
-      );
-      setActiveEmojiPicker(null);
-    },
-    [USER_ID]
-  );
+        }
+
+        return {
+          ...msg,
+          reactions,
+          icon: updatedIcon,
+        };
+      })
+    );
+
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -235,6 +273,10 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
       clearTimeout(typingTimeoutRef.current);
     };
   }, []);
+
+  if (!user) {
+    return <div>Loading...</div>;
+  }
 
   if (!dataRoom) {
     return (
@@ -265,6 +307,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         setActiveEmojiPicker={setActiveEmojiPicker}
         addReaction={addReaction}
         toggleEmojiPicker={toggleEmojiPicker}
+        emojiPickerRef={emojiPickerRef}
       />
       {/* Message Input */}
       <InputChat

@@ -19,10 +19,11 @@ const ShowMessage = ({
     activeEmojiPicker,
     setActiveEmojiPicker,
     addReaction,
-    toggleEmojiPicker 
+    toggleEmojiPicker,
+    emojiPickerRef 
 }) => {
-    
-    const emojiPickerRef = useRef(null);
+
+    //const emojiPickerRef = useRef(null);
     const formatTimeHeader = (date) => {
         if (isToday(date)) return 'Hôm nay';
         if (isYesterday(date)) return 'Hôm qua';
@@ -96,7 +97,10 @@ const ShowMessage = ({
                                                     {EMOJIS.map((emoji, index) => (
                                                         <button
                                                             key={index}
-                                                            onClick={() => addReaction(msg.message_id, emoji)}
+                                                            onClick={() => {
+                                                                addReaction(msg.message_id, emoji, USER_ID);
+                                                                setActiveEmojiPicker(null); // ẩn picker
+                                                            }}
                                                             className="p-1 hover:bg-gray-200 rounded-full text-xl transition-transform transform hover:scale-110"
                                                         >
                                                             {emoji}
@@ -106,25 +110,29 @@ const ShowMessage = ({
                                             </div>
                                         )}
                                     </div>
-                                    {/* Reactions display ( show )*/}
-                                    {msg.icon && Object.keys(msg.icon.reaction_id).length > 0 && (
+                                    {/* Reactions display ( show ) click again to delete */}
+                                    {Array.isArray(msg.icon) && msg.icon.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mt-1">
-                                            <button
-                                                key={msg.icon.reaction_id}
-                                                onClick={() => {
-                                                    addReaction(msg.message_id, msg.icon.emoji);
-                                                }}
-                                                className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 border transition-all
-                                                    ${isMe
-                                                        ? 'bg-blue-100 text-blue-600 border-blue-200 font-bold'
-                                                        : 'bg-gray-100 text-gray-600 border-gray-200'
-                                                    }`}
-                                            >
-                                                <span className="text-base">{msg.icon.emoji}</span>
-                                                <span className="font-medium">1</span>
-                                            </button>
+                                            {msg.icon.map((reaction) => (
+                                                <button
+                                                    key={reaction.reaction_id}
+                                                    onClick={() => {
+                                                        addReaction(msg.message_id, msg.icon.emoji);
+                                                        setActiveEmojiPicker(null); // ẩn picker
+                                                    }}
+                                                    className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 border transition-all
+                                                        ${isMe
+                                                            ? 'bg-blue-100 text-blue-600 border-blue-200 font-bold'
+                                                            : 'bg-gray-100 text-gray-600 border-gray-200'
+                                                        }`}
+                                                >
+                                                    <span className="text-base">{reaction.emoji}</span>
+                                                    <span className="font-medium">1</span> {/* hoặc reaction.count nếu có */}
+                                                </button>
+                                            ))}
                                         </div>
                                     )}
+
                                     <span className="text-xs font-extralight text-gray-400 mt-1">
                                         {timeString}
                                     </span>

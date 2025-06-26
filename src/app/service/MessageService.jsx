@@ -38,3 +38,15 @@ export const sendIcon = async (reaction) => {
     console.error("error fetching sendIcon: ", error)
   }
 };
+
+export const deleteIcon = async (reaction_id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/reaction/delete/${reaction_id}`);
+    if (response.status !== 200) {
+      console.log("Failed to fetch messages:", response.statusText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("Error delete reaction at MessageService: ", error);
+  }
+}

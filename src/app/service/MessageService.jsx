@@ -33,6 +33,7 @@ export const sendIcon = async (reaction) => {
       console.log("Failed to fetch messages:", response.statusText);
       throw new Error(`HTTP error! status: ${response.status}`);
       } 
+      return response.data;
   } catch (error) {
     console.error("error fetching sendIcon: ", error)
   }

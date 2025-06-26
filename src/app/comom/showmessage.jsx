@@ -4,6 +4,7 @@ import "../../css/hiddenscroll.css";
 import 'dayjs/locale/vi';
 import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import {deleteIcon} from '@/app/service/MessageService'
 
 
 const EMOJIS = [
@@ -29,6 +30,17 @@ const ShowMessage = ({
         if (isYesterday(date)) return 'Hôm qua';
         return format(date, 'EEEE, dd/MM/yyyy', { locale: vi });
     };
+
+    const fetchingDeletereaction = async (reaction_id) => {
+        console.log("reaction id: ". reaction_id);
+        try {
+            const response = await deleteIcon(reaction_id);
+            console.log(response);
+        } catch (error) {
+            console.error("error: ", error);
+        }
+    }
+    
     return (
         <div
             ref={scrollRef}
@@ -117,7 +129,7 @@ const ShowMessage = ({
                                                 <button
                                                     key={reaction.reaction_id}
                                                     onClick={() => {
-                                                        addReaction(msg.message_id, msg.icon.emoji);
+                                                        fetchingDeletereaction(reaction.reaction_id);
                                                         setActiveEmojiPicker(null); // ẩn picker
                                                     }}
                                                     className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 border transition-all

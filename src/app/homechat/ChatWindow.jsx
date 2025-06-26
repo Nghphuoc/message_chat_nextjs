@@ -217,8 +217,8 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
         if (currentEmoji === emoji) {
           // Gỡ bỏ reaction
-          // delete reactions[USER_ID];
-          // updatedIcon = updatedIcon.filter(r => r.user_id !== USER_ID);
+          delete reactions[USER_ID];
+          updatedIcon = updatedIcon.filter(r => r.user_id !== USER_ID);
         } else {
           // Gán reaction mới
           reactions[USER_ID] = emoji;

@@ -48,9 +48,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
-    } else {
-      // Redirect to login if user is not found
-      router.push('/authorization/login');
     }
   }, []);
 
@@ -88,26 +85,37 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     const socket = new WebSocket(`ws://localhost:8000/api/ws/${ROOM_ID}/${USER_ID}`);
     ws.current = socket;
     connectionRef.current = { roomId: ROOM_ID, socket };
-    socket.onopen = () => { };
+    socket.onopen = () => { console.log("WebSocket connected"); };
     socket.onerror = () => { };
     socket.onclose = (event) => {
       if (ws.current === socket) ws.current = null;
     };
 
     socket.onmessage = (event) => {
+      console.log("event: ", event);
+      //const type = JSON.parse(event.data.type);
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === "error") {
+        alert("error", msg.data);
+        return;
+      }
+
       try {
-        const msg = JSON.parse(event.data);
-        setMessages((prev) => {
-          if (prev.some((m) => m.message_id === msg.message_id)) return prev;
-          const updated = [...prev, msg];
-          messageCache.current[ROOM_ID] = updated;
-          return updated;
-        });
+        console.log("Msg: ", msg);
+        if (msg.type === "message") {
+          setMessages((prev) => {
+            if (prev.some((m) => m.message_id === msg.data.message_id)) return prev;
+            const updated = [...prev, msg.data];
+            messageCache.current[ROOM_ID] = updated;
+            return updated;
+          });
+        }
       } catch (error) {
-        console.error("Error call: ", error);
-        // ignore invalid message format
+        console.error("Error parsing message: ", error);
       }
     };
+
 
     fetchMessages();
     return () => {
@@ -189,15 +197,24 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
       return;
     }
+
+    const payload = {
+      type: "message",  // hoặc "send_message", tuỳ backend
+      data: {
+        content: input.trim(),
+      }
+    };
+
     try {
-      ws.current.send(input.trim());
+      ws.current.send(JSON.stringify(payload));
       setInput("");
       setIsTyping(false);
       clearTimeout(typingTimeoutRef.current);
     } catch (error) {
-      console.error("error sendMessage function: ", error);
+      console.error("Error sendMessage function: ", error);
     }
   }, [input]);
+
 
   const toggleEmojiPicker = useCallback((messageId) => {
     setActiveEmojiPicker((prev) => (prev === messageId ? null : messageId));
@@ -212,7 +229,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
         const reactions = { ...(msg.reactions || {}) };
         const currentEmoji = reactions[USER_ID];
-        
+
         let updatedIcon = Array.isArray(msg.icon) ? [...msg.icon] : [];
 
         if (currentEmoji === emoji) {

@@ -93,7 +93,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
     socket.onmessage = (event) => {
       console.log("event: ", event);
-      //const type = JSON.parse(event.data.type);
       const msg = JSON.parse(event.data);
 
       if (msg.type === "error") {

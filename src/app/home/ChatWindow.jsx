@@ -110,6 +110,10 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
             return updated;
           });
         }
+
+        if (msg.tyoe === "reaction") {
+          console.log("");
+        }
       } catch (error) {
         console.error("Error parsing message: ", error);
       }
@@ -150,6 +154,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     try {
       const data = await sendIcon(reaction);
       console.log("data response: ", data);
+      return data;
     } catch (error) {
       console.error("error send Reaction: ", error);
     }
@@ -220,7 +225,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   }, []);
 
   const addReaction = useCallback((messageId, emoji, USER_ID) => {
-    fetChingSendIcon(messageId, emoji, USER_ID);
+    const iconData = fetChingSendIcon(messageId, emoji, USER_ID);
     setMessages((prev) =>
 
       prev.map((msg) => {

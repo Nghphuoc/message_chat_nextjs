@@ -31,10 +31,10 @@ const ShowMessage = ({
         return format(date, 'EEEE, dd/MM/yyyy', { locale: vi });
     };
 
-    const fetchingDeletereaction = async (reaction_id) => {
+    const fetchingDeletereaction = async (reaction_id, user_id) => {
         console.log("reaction id: ". reaction_id);
         try {
-            const response = await deleteIcon(reaction_id);
+            const response = await deleteIcon(reaction_id, user_id);
             console.log(response);
         } catch (error) {
             console.error("error: ", error);
@@ -129,7 +129,7 @@ const ShowMessage = ({
                                                 <button
                                                     key={reaction.reaction_id}
                                                     onClick={() => {
-                                                        fetchingDeletereaction(reaction.reaction_id);
+                                                        fetchingDeletereaction(reaction.reaction_id, USER_ID);
                                                         setActiveEmojiPicker(null); // ẩn picker
                                                     }}
                                                     className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 border transition-all

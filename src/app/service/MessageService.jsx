@@ -39,9 +39,9 @@ export const sendIcon = async (reaction) => {
   }
 };
 
-export const deleteIcon = async (reaction_id) => {
+export const deleteIcon = async (reaction_id, user_id) => {
   try {
-    const response = await axios.delete(`${API_URL}/reaction/delete/${reaction_id}`);
+    const response = await axios.delete(`${API_URL}/reaction/delete/${reaction_id}/${user_id}`);
     if (response.status !== 200) {
       console.log("Failed to fetch messages:", response.statusText);
       throw new Error(`HTTP error! status: ${response.status}`);

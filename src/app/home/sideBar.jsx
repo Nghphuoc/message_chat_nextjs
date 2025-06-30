@@ -12,7 +12,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-export default function Sidebar({ onChatsClick }) {
+export default function Sidebar({ chatGroup }) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
@@ -41,7 +41,7 @@ export default function Sidebar({ onChatsClick }) {
 
   const navItems = [
     { icon: faUser, label: 'Profile', action: profile },
-    { icon: faCommentAlt, label: 'Chats', action: onChatsClick },
+    { icon: faCommentAlt, label: 'Chats', action: chatGroup },
     { icon: faUserGroup , label: 'Friend', action: friend },
     { icon: faCog, label: 'Settings', action: setting },
     { icon: faQuestionCircle, label: 'Help', action: help },

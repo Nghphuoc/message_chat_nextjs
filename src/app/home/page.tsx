@@ -108,7 +108,7 @@ const PageRoot = () => {
       <div className="flex h-screen overflow-hidden bg-gradient-to-tr from-sky-50 to-blue-100">
         {/* Sidebar */}
         <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white shadow-sm">
-          <Sidebar onChatsClick={() => setCheckedListChat(prev => !prev)} />
+          <Sidebar chatGroup={() => setCheckedListChat(prev => !prev)} />
         </div>
 
         {/* Main Container */}

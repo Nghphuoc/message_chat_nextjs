@@ -29,6 +29,30 @@ export default function ChatList({ selectRoomId }) {
     }
   }, []);
 
+  const USER_ID = user?.user_id;
+
+  useEffect(() => {
+  if (!USER_ID) return;
+
+  const socket = new WebSocket(`ws://localhost:8000/api/ws/status/update/${USER_ID}`);
+  
+  socket.onopen = () => console.log("WebSocket status connected");
+  socket.onerror = (error) => console.error("WebSocket error:", error);
+  socket.onclose = () => console.log("WebSocket status disconnected");
+
+  socket.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    console.log("message send: ". message);
+    if (message.type === "status") {
+      const { user_id, is_online, last_seen } = message.data;
+      updateUserStatus(user_id, is_online, last_seen);
+    }
+  };
+
+  //return () => socket.close();
+}, [USER_ID]);
+
+
   const fetchData = async (userId) => {
     try {
       const data = await fetchChatList(userId);
@@ -40,6 +64,17 @@ export default function ChatList({ selectRoomId }) {
       setLoading(false);
     }
   };
+
+  const updateUserStatus = (user_id, is_online, last_seen) => {
+  setChatList(prev =>
+    prev.map(chat =>
+      chat.room_id.includes(user_id) || chat.user_id === user_id
+        ? { ...chat, status: is_online, last_seen: last_seen }
+        : chat
+    )
+  );
+};
+
 
   const onclickSelectRoom = (chat) => {
     selectRoomId(chat);

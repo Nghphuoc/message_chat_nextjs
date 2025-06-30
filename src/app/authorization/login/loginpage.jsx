@@ -34,7 +34,7 @@ export default function LoginPage() {
                 sessionStorage.setItem('token', data.access_token);
 
                 // Redirect
-                router.push('/homechat');
+                router.push('/home');
             } else {
                 toast.error('Unexpected login response.');
                 console.warn('Unexpected response structure:', data);

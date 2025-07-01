@@ -8,6 +8,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
 import { IoCall } from "react-icons/io5";
 import { IoVideocam } from "react-icons/io5";
+import { useEffect, useState } from "react";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -15,6 +16,11 @@ dayjs.extend(relativeTime);
 dayjs.locale('vi');
 
 const HeaderChat = ({ dataRoom }) => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    setData(dataRoom);
+  }, [dataRoom])
 
   return (
     <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
@@ -28,20 +34,20 @@ const HeaderChat = ({ dataRoom }) => {
 
         <img
           className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-          src={dataRoom.img_url}
-          alt={dataRoom.username}
+          src={data.img_url}
+          alt={data.username}
         />
 
         <div className="flex flex-col min-w-0">
           <span
             className="text-base sm:text-lg font-semibold text-gray-800 truncate max-w-[150px] sm:max-w-[180px]"
-            title={dataRoom.username}
+            title={data.username}
           >
-            {dataRoom.username}
+            {data.username}
           </span>
           <div className="flex items-center space-x-1">
             {
-              dataRoom.status ? (
+              data.status ? (
                 <>
                   < span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                   <span className="text-xs text-gray-500">Online</span>
@@ -50,7 +56,7 @@ const HeaderChat = ({ dataRoom }) => {
                 (
                   <>
                     <span className="text-xs text-gray-500">Offline</span>
-                    <span className="text-xs text-gray-500">{dayjs(dataRoom.last_seen).tz('Asia/Ho_Chi_Minh').fromNow()}</span>
+                    <span className="text-xs text-gray-500">{dayjs(data.last_seen).tz('Asia/Ho_Chi_Minh').fromNow()}</span>
                   </>
                 )
             }

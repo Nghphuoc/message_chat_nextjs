@@ -126,6 +126,7 @@ const ShowMessage = ({
                                     </div>
                                     {/* Reactions display ( show ) click again to delete */}
                                     {Array.isArray(msg.icon) && msg.icon.length > 0 && (
+                                        
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {msg.icon.map((reaction) => (
                                                 <button
@@ -135,7 +136,7 @@ const ShowMessage = ({
                                                         setActiveEmojiPicker(null); // ẩn picker
                                                     }}
                                                     className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 border transition-all
-                                                        ${isMe
+                                                        ${USER_ID == reaction.user_id
                                                             ? 'bg-blue-100 text-blue-600 border-blue-200 font-bold'
                                                             : 'bg-gray-100 text-gray-600 border-gray-200'
                                                         }`}

@@ -32,25 +32,25 @@ export default function ChatList({ selectRoomId }) {
   const USER_ID = user?.user_id;
 
   useEffect(() => {
-  if (!USER_ID) return;
+    if (!USER_ID) return;
 
-  const socket = new WebSocket(`ws://localhost:8000/api/ws/status/update/${USER_ID}`);
-  
-  socket.onopen = () => console.log("WebSocket status connected");
-  socket.onerror = (error) => console.error("WebSocket error:", error);
-  socket.onclose = () => console.log("WebSocket status disconnected");
+    const socket = new WebSocket(`ws://localhost:8000/api/ws/status/update/${USER_ID}`);
 
-  socket.onmessage = (event) => {
-    const message = JSON.parse(event.data);
-    console.log("message send: ". message);
-    if (message.type === "status") {
-      const { user_id, is_online, last_seen } = message.data;
-      updateUserStatus(user_id, is_online, last_seen);
-    }
-  };
+    socket.onopen = () => console.log("WebSocket status connected");
+    socket.onerror = (error) => console.error("WebSocket error:", error);
+    socket.onclose = () => console.log("WebSocket status disconnected");
 
-  //return () => socket.close();
-}, [USER_ID]);
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log("message send: ",message);
+      if (message.type === "status") {
+        const { user_id, is_online, last_seen } = message.data;
+        updateUserStatus(user_id, is_online, last_seen);
+      }
+    };
+
+    //return () => socket.close();
+  }, [USER_ID]);
 
 
   const fetchData = async (userId) => {
@@ -66,15 +66,14 @@ export default function ChatList({ selectRoomId }) {
   };
 
   const updateUserStatus = (user_id, is_online, last_seen) => {
-  setChatList(prev =>
-    prev.map(chat =>
-      chat.room_id.includes(user_id) || chat.user_id === user_id
-        ? { ...chat, status: is_online, last_seen: last_seen }
-        : chat
-    )
-  );
-};
-
+    setChatList(prev =>
+      prev.map(chat =>
+        chat.room_id.includes(user_id) || chat.user_id === user_id
+          ? { ...chat, status: is_online, last_seen: last_seen }
+          : chat
+      )
+    );
+  };
 
   const onclickSelectRoom = (chat) => {
     selectRoomId(chat);
@@ -93,8 +92,6 @@ export default function ChatList({ selectRoomId }) {
   if (!user) {
     return <div className="p-4 text-gray-500">Loading user...</div>;
   }
-
-  // The rest of your UI (return block) remains unchanged
 
   return (
     <div className="hidden md:flex ml-[80px] w-96 flex-col border-r border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-lg ">

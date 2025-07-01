@@ -111,14 +111,13 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
           });
         }
 
-        if (msg.tyoe === "reaction") {
+        if (msg.type === "reaction") {
           console.log("");
         }
       } catch (error) {
         console.error("Error parsing message: ", error);
       }
     };
-
 
     fetchMessages();
     return () => {

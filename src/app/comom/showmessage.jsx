@@ -103,7 +103,9 @@ const ShowMessage = ({
                                         {activeEmojiPicker === msg.message_id && (
                                             <div
                                                 ref={emojiPickerRef}
-                                                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-1 pl-3 pr-3 z-50 w-[300px]"
+                                                className={`absolute top-full mt-2
+                                                    ${isMe ? 'right-1/8' : 'left-1/8'}
+                                                    bg-white border border-gray-200 rounded-2xl shadow-lg p-1 pl-3 pr-3 z-50 w-[300px]`}
                                             >
                                                 <div className="grid grid-cols-6 gap-1 p-1">
                                                     {EMOJIS.map((emoji, index) => (

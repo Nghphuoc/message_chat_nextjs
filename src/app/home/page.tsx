@@ -93,7 +93,7 @@ const PageRoot = () => {
 
   if (!userChecked) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-r from-sky-100 to-blue-200 text-gray-600">
+      <div className="flex items-center text-center justify-center h-screen bg-gradient-to-r from-sky-100 to-blue-200 text-gray-600">
         Loading user...
       </div>
     );

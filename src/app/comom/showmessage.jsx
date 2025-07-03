@@ -4,7 +4,7 @@ import "../../css/hiddenscroll.css";
 import 'dayjs/locale/vi';
 import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import {deleteIcon} from '@/app/service/MessageService'
+import { deleteIcon } from '@/app/service/MessageService'
 
 
 const EMOJIS = [
@@ -21,7 +21,7 @@ const ShowMessage = ({
     setActiveEmojiPicker,
     addReaction,
     toggleEmojiPicker,
-    emojiPickerRef 
+    emojiPickerRef
 }) => {
 
     //const emojiPickerRef = useRef(null);
@@ -32,7 +32,7 @@ const ShowMessage = ({
     };
 
     const fetchingDeletereaction = async (reaction_id, user_id) => {
-        console.log("reaction id: ". reaction_id);
+        console.log("reaction id: ".reaction_id);
         try {
             const response = await deleteIcon(reaction_id, user_id);
             console.log(response);
@@ -40,7 +40,7 @@ const ShowMessage = ({
             console.error("error: ", error);
         }
     }
-    
+
     return (
         <div
             ref={scrollRef}
@@ -126,23 +126,22 @@ const ShowMessage = ({
                                     </div>
                                     {/* Reactions display ( show ) click again to delete */}
                                     {Array.isArray(msg.icon) && msg.icon.length > 0 && (
-                                        
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {msg.icon.map((reaction) => (
                                                 <button
                                                     key={reaction.reaction_id}
                                                     onClick={() => {
-                                                        fetchingDeletereaction(reaction.reaction_id, USER_ID);
-                                                        setActiveEmojiPicker(null); // ẩn picker
+                                                        if (reaction.user_id === USER_ID) {
+                                                            fetchingDeletereaction( reaction.reaction_id, USER_ID);
+                                                        }
                                                     }}
                                                     className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 border transition-all
-                                                        ${USER_ID == reaction.user_id
-                                                            ? 'bg-blue-100 text-blue-600 border-blue-200 font-bold'
-                                                            : 'bg-gray-100 text-gray-600 border-gray-200'
+                                                        ${reaction.user_id === USER_ID
+                                                            ? 'bg-blue-100 text-blue-600 border-blue-300 font-bold'
+                                                            : 'bg-gray-100 text-gray-700 border-gray-200'
                                                         }`}
                                                 >
                                                     <span className="text-base">{reaction.emoji}</span>
-                                                    <span className="font-medium">1</span> {/* hoặc reaction.count nếu có */}
                                                 </button>
                                             ))}
                                         </div>

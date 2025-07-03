@@ -9,11 +9,12 @@ import timezone from 'dayjs/plugin/timezone';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
 import { format, isToday, isYesterday } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { ms, vi } from 'date-fns/locale';
 import HeaderChat from "../comom/headerchat";
 import ShowMessage from "@/app/comom/showmessage";
 import InputChat from "@/app/comom/inputchat";
 import { useRouter } from 'next/navigation';
+import { Toaster, toast } from "react-hot-toast";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -86,7 +87,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     ws.current = socket;
     connectionRef.current = { roomId: ROOM_ID, socket };
     socket.onopen = () => { console.log("WebSocket connected"); };
-    socket.onerror = () => { };
+    socket.onerror = () => { console.log("error connect!") };
     socket.onclose = (event) => {
       if (ws.current === socket) ws.current = null;
     };
@@ -96,7 +97,16 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
       const msg = JSON.parse(event.data);
 
       if (msg.type === "error") {
-        alert("error", msg.data);
+        toast('Error '+ msg.message,
+          {
+            icon: '😭',
+            style: {
+              borderRadius: '10px',
+              background: '#333',
+              color: '#fff',
+            },
+          }
+        );
         return;
       }
 
@@ -112,7 +122,9 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         }
 
         if (msg.type === "reaction") {
-          console.log("");
+          const {reaction_id, message_id, emoji, user_id } = msg.data;
+          handleReaction(reaction_id, message_id, emoji, user_id);
+          console.log("reaction: ", msg.data);
         }
       } catch (error) {
         console.error("Error parsing message: ", error);
@@ -161,10 +173,10 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
   const fetchMessages = useCallback(async () => {
     if (!ROOM_ID) return;
-    if (messageCache.current[ROOM_ID]) {
-      setMessages(messageCache.current[ROOM_ID]);
-      return;
-    }
+    // if (messageCache.current[ROOM_ID]) {
+    //   setMessages(messageCache.current[ROOM_ID]);
+    //   return;
+    // }
     try {
       const oldMessages = await fetchOldMessages(ROOM_ID);
       setMessages(oldMessages);
@@ -223,50 +235,67 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     setActiveEmojiPicker((prev) => (prev === messageId ? null : messageId));
   }, []);
 
-  const addReaction = useCallback((messageId, emoji, USER_ID) => {
-    const iconData = fetChingSendIcon(messageId, emoji, USER_ID);
-    setMessages((prev) =>
+  const addReaction = (message_id, emoji, user_id) => {
+    const reaction = {
+      user_id: user_id,
+      message_id: message_id,
+      emoji: emoji,
+    }
 
-      prev.map((msg) => {
-        if (msg.message_id !== messageId) return msg;
+    const payload = {
+      type: "reaction",  // hoặc "send_message", tuỳ backend
+      data: reaction
+    };
+    if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
+      return;
+    }
 
-        const reactions = { ...(msg.reactions || {}) };
-        const currentEmoji = reactions[USER_ID];
+    try {
+      ws.current.send(JSON.stringify(payload));
+    } catch (error) {
+      console.error("Error addReaction function: ", error);
+    }
+  }
 
-        let updatedIcon = Array.isArray(msg.icon) ? [...msg.icon] : [];
 
-        if (currentEmoji === emoji) {
-          // Gỡ bỏ reaction
-          delete reactions[USER_ID];
-          updatedIcon = updatedIcon.filter(r => r.user_id !== USER_ID);
+  const handleReaction = (reaction_id, message_id, emoji, user_id) => {
+    setMessages(prevMessages =>
+      prevMessages.map(msg => {
+        if (msg.message_id !== message_id) return msg;
+
+        // Ensure icon is array
+        let currentReactions = Array.isArray(msg.icon) ? [...msg.icon] : [];
+
+        const existingIndex = currentReactions.findIndex(
+          (r) => r.user_id === user_id
+        );
+
+        if (existingIndex !== -1) {
+
+            currentReactions[existingIndex] = {
+              ...currentReactions[existingIndex],
+              emoji,
+              created_at: new Date().toISOString()
+            };
+          
         } else {
-          // Gán reaction mới
-          reactions[USER_ID] = emoji;
-
-          // Nếu user đã có reaction trước đó → cập nhật emoji
-          const existed = updatedIcon.find(r => r.user_id === USER_ID);
-          if (existed) {
-            existed.emoji = emoji;
-          } else {
-            updatedIcon.push({
-              message_id: messageId,
-              user_id: USER_ID,
-              reaction_id: crypto.randomUUID(), // hoặc tạm sinh gì đó
-              created_at: new Date().toISOString(),
-              emoji: emoji,
-            });
-          }
+          // User chưa có → thêm mới
+          currentReactions.push({
+            message_id,
+            user_id,
+            emoji,
+            created_at: new Date().toISOString(),
+            reaction_id: reaction_id
+          });
         }
 
         return {
           ...msg,
-          reactions,
-          icon: updatedIcon,
+          icon: currentReactions
         };
       })
     );
-
-  }, []);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -314,6 +343,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
   return (
     <section className="flex flex-col flex-1 bg-gradient-to-br from-white to-gray-50 min-h-screen shadow-lg rounded-2xl border border-gray-200">
+      <Toaster />
       {/* Header */}
       <HeaderChat dataRoom={dataRoom} />
       {/* Chat Messages */}

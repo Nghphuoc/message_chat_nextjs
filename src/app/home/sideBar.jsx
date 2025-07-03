@@ -10,6 +10,7 @@ import {
   faSignOutAlt,
   faUserGroup
 } from '@fortawesome/free-solid-svg-icons';
+import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export default function Sidebar({ chatGroup }) {
@@ -17,6 +18,7 @@ export default function Sidebar({ chatGroup }) {
   const router = useRouter();
 
   const logout = () => {
+    window.dispatchEvent(new Event("logout"));
     sessionStorage.removeItem('user');
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('chat');
@@ -24,7 +26,7 @@ export default function Sidebar({ chatGroup }) {
   };
 
   const profile = () => {
-    router.push("/#");
+    router.push("/userdetail");
   };
 
   const setting = () => {
@@ -36,7 +38,7 @@ export default function Sidebar({ chatGroup }) {
   };
 
   const friend = () => {
-
+    router.push("/addfriend");
   }
 
   const navItems = [
@@ -64,9 +66,11 @@ export default function Sidebar({ chatGroup }) {
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
       >
         {/* Logo */}
+        <Link href={"/home"}>
         <div className="flex items-center justify-center w-16 h-16 mx-auto mt-6 mb-8 rounded-2xl bg-white shadow-lg hover:scale-110 transform transition-transform duration-300">
           <FontAwesomeIcon icon={faBolt} className="text-blue-600 text-2xl" />
         </div>
+        </Link>
 
         {/* Navigation */}
         <nav className="flex flex-col space-y-6 mt-4 px-2">

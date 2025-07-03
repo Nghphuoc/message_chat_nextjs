@@ -172,7 +172,6 @@ export default function ChatList({ selectRoomId }) {
 
         {/* Chat List */}
         <ul className="flex flex-col space-y-2 sm:space-y-3 h-96 overflow-y-auto scrollbar-thin scrollbar-hide" style={{ maxHeight: "500px" }}>
-
           {/* Additional sample chats */}
           {chatList.map((chat) => (
             <li
@@ -202,7 +201,9 @@ export default function ChatList({ selectRoomId }) {
                   <p className="text-sm font-semibold text-gray-800 truncate">{chat.username}</p>
                   {/* <p className="text-xs font-extralight text-gray-400">{!chat.status ? dayjs(chat.last_seen).tz('Asia/Ho_Chi_Minh').fromNow() : ""}</p> */}
                 </div>
-                <p className="text-xs text-gray-500 truncate">{chat.status ? <span className="text-green-500">Online</span> : <span className="text-red-500">Offline</span>}</p>
+                {/* <p className="text-xs text-gray-500 truncate">{chat.status ? <span className="text-green-500">Online</span> : <span className="text-red-500">Offline</span>}</p> */}
+                <p className="text-xs text-gray-500 truncate font-normal"> {chat.action? (<strong>{chat.action}</strong>) : ("not message")} </p>
+
               </div>
               {chat.unread > 0 && (
                 <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-sm">
@@ -212,7 +213,6 @@ export default function ChatList({ selectRoomId }) {
 
             </li>
           ))}
-
         </ul>
       </section>
     </div>

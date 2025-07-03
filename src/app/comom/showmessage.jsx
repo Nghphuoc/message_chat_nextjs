@@ -21,7 +21,8 @@ const ShowMessage = ({
     setActiveEmojiPicker,
     addReaction,
     toggleEmojiPicker,
-    emojiPickerRef
+    emojiPickerRef,
+    remove
 }) => {
 
     //const emojiPickerRef = useRef(null);
@@ -132,7 +133,7 @@ const ShowMessage = ({
                                                     key={reaction.reaction_id}
                                                     onClick={() => {
                                                         if (reaction.user_id === USER_ID) {
-                                                            fetchingDeletereaction( reaction.reaction_id, USER_ID);
+                                                            remove( msg.message_id, reaction.emoji, USER_ID, reaction.reaction_id);
                                                         }
                                                     }}
                                                     className={`px-2 py-0.5 rounded-full text-xs flex items-center gap-1 border transition-all

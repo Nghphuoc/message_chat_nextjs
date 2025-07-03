@@ -111,7 +111,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
       }
 
       try {
-        console.log("Msg: ", msg);
+        console.log("msg: ", msg);
         if (msg.type === "message") {
           setMessages((prev) => {
             if (prev.some((m) => m.message_id === msg.data.message_id)) return prev;
@@ -121,13 +121,19 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
           });
         }
 
-        if (msg.type === "reaction") {
+        else if (msg.type === "reaction") {
           const {reaction_id, message_id, emoji, user_id } = msg.data;
           handleReaction(reaction_id, message_id, emoji, user_id);
           console.log("reaction: ", msg.data);
         }
+
+        else if (msg.type === "cancel_reaction") {
+          const {reaction_id, message_id, user_id } = msg.data;
+          handleCancelReaction(reaction_id, message_id, user_id);
+          // console.log("reaction delete: ", msg.data);
+        }
       } catch (error) {
-        console.error("Error parsing message: ", error);
+        console.error("Error parsing : ", error);
       }
     };
 
@@ -297,6 +303,49 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     );
   };
 
+  const removeReacion = (message_id, emoji, user_id, reaction_id) => {
+    const reaction = {
+      user_id: user_id,
+      message_id: message_id,
+      emoji: emoji,
+      reaction_id: reaction_id
+    }
+
+    const payload = {
+      type: "cancel_reaction",  
+      data: reaction
+    };
+    if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
+      return;
+    }
+
+    try {
+      ws.current.send(JSON.stringify(payload));
+    } catch (error) {
+      console.error("Error addReaction function: ", error);
+    }
+  }
+
+  const handleCancelReaction = (reaction_id, message_id, user_id) => {
+  setMessages(prevMessages =>
+    prevMessages.map(msg => {
+      if (msg.message_id !== message_id) return msg;
+
+      const currentReactions = Array.isArray(msg.icon) ? [...msg.icon] : [];
+
+      const updatedReactions = currentReactions.filter(
+        r => !(r.reaction_id === reaction_id && r.user_id === user_id)
+      );
+
+      return {
+        ...msg,
+        icon: updatedReactions
+      };
+    })
+  );
+};
+
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -358,6 +407,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         addReaction={addReaction}
         toggleEmojiPicker={toggleEmojiPicker}
         emojiPickerRef={emojiPickerRef}
+        remove={removeReacion}
       />
       {/* Message Input */}
       <InputChat

@@ -10,26 +10,6 @@ import RightPanel from './rightPanel';
 //import UserDetail from './UserDetail';
 import "../globals.css";
 
-// const mockUser = {
-//   user_id: '12345',
-//   username: 'john_doe',
-//   password: 'secret',
-//   email: 'john@example.com',
-//   phone: '0123456789',
-//   img_url: 'https://randomuser.me/api/portraits/men/32.jpg',
-//   display_name: 'John Doe',
-//   created_at: new Date().toISOString(),
-//   role: { name: 'User' },
-//   flagDelete: false,
-// };
-// const mockOption = {
-//   img_url: 'https://randomuser.me/api/portraits/men/32.jpg',
-//   username: 'john_doe',
-//   room_id: 'room_001',
-//   status: true,
-//   last_seen: new Date().toISOString(),
-// };
-
 const PageRoot = () => {
   const [rightPanelWidth, setRightPanelWidth] = useState(320);
   const [isResizing, setIsResizing] = useState(false);
@@ -101,10 +81,6 @@ const PageRoot = () => {
 
   return (
     <>
-      {/* <div className='bg-pink-300'>
-      <UserDetail user={mockUser} option={mockOption} />
-      </div> */}
-
       <div className="flex h-screen overflow-hidden bg-gradient-to-tr from-sky-50 to-blue-100">
         {/* Sidebar */}
         <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white shadow-sm">

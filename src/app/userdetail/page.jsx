@@ -1,6 +1,5 @@
 'use client';
-import UserDetailPage from "./UserDetail"
-import SideBar from "../home/sideBar"
+import UserDetailPage from "./UserDetail";
 import { useState, useEffect } from "react";
 
 const RootPage = () => {
@@ -16,7 +15,6 @@ const RootPage = () => {
   if (!user) return <div>Loading...</div>;
   return (
     <>
-    {/* <SideBar chatGroup={undefined} /> */}
     <UserDetailPage user = {user}></UserDetailPage>
     </>
   );

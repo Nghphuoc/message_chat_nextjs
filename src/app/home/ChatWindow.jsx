@@ -150,16 +150,11 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
-    const isNearBottom =
-      scrollContainer.scrollHeight - scrollContainer.scrollTop <=
-      scrollContainer.clientHeight + 100;
-    if (isNearBottom) {
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  }, [messages]);
+    scrollContainer.scrollTo({
+      top: scrollContainer.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages, dataRoom]);
 
   const fetChingSendIcon = async (messageId, emoji, USER_ID) => {
     const reaction = {
@@ -373,13 +368,13 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   }, []);
 
   if (!user) {
-    return <div>Loading...</div>;
+    return <div className="items-center text-center text-2xl text-blue-500">Loading...</div>;
   }
 
   if (!dataRoom) {
     return (
       <section className="flex items-center justify-center h-full font-extrabold text-gray-500">
-        <p>No chat selected. Please select a chat to start messaging.</p>
+        <p className="text-center items-center">No chat selected. Please select a chat to start messaging.</p>
       </section>
     );
   }

@@ -24,7 +24,9 @@ export const addFriend = async (userId, friendId) => {
 
 export const acceptFriendRequest = async (userId, friendId) => {
   try {
-    const response = await axios.put(`${API_URL}/add_friend/accept/${userId}/${friendId}`);
+    const response = await axios.put(`${API_URL}/add_friend/accept/${userId}/${friendId}`, {
+      status: "ACCEPTED",
+    });
     return response.data;
   } catch (error) {
     console.error('Error accepting friend request:', error);
@@ -34,7 +36,9 @@ export const acceptFriendRequest = async (userId, friendId) => {
 
 export const rejectFriendRequest = async (userId, friendId) => {
   try {
-    const response = await axios.put(`${API_URL}/add_friend/reject/${userId}/${friendId}`);
+    const response = await axios.put(`${API_URL}/add_friend/reject/${userId}/${friendId}`, {
+      status: "ACCEPTED",
+    });
     return response.data;
   } catch (error) {
     console.error('Error rejecting friend request:', error);

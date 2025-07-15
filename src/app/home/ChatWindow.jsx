@@ -317,7 +317,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     );
   };
 
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (

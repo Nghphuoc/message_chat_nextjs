@@ -49,7 +49,7 @@ const HeaderChat = ({ dataRoom }) => {
             {
               data.status ? (
                 <>
-                  < span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                   <span className="text-xs text-gray-500">Online</span>
                 </>
               ) :

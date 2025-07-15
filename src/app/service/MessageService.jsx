@@ -50,3 +50,15 @@ export const deleteIcon = async (reaction_id, user_id) => {
     console.error("Error delete reaction at MessageService: ", error);
   }
 }
+
+export const deleteMessage = async (message_id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/message/delete/${message_id}`);
+    if(response.status !== 200) {
+      console.log("Failed to feach delete message", response.statusText);
+      throw new Error(`Error delete message at MessageService`);
+    }
+  } catch (error) {
+    console.log("Error delete messgae at MessageService: ", error);
+  }
+}

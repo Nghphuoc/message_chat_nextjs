@@ -22,7 +22,8 @@ const ShowMessage = ({
     toggleEmojiPicker,
     emojiPickerRef,
     remove,
-    deleteMessage
+    deleteMessage,
+    onRightClick
 }) => {
     // ====== STATE & REF ======
     const [activeMenu, setActiveMenu] = useState(null); // message_id của menu đang mở
@@ -83,7 +84,7 @@ const ShowMessage = ({
                     const showTimeHeader =
                         index === 0 || !isSameDay(currentDate, prevDate);
                     return (
-                        <div key={msg.message_id}>
+                        <div key={msg.message_id} onContextMenu={(e) => onRightClick(e, msg.message_id)}>
                             {showTimeHeader && (
                                 <div className="flex justify-center text-xs text-gray-500 my-2">
                                     {formatTimeHeader(currentDate)}
@@ -130,7 +131,7 @@ const ShowMessage = ({
                                                 className={`absolute top-full mt-2 ${isMe ? 'right-1/8' : 'left-1/8'} bg-white border border-gray-200 rounded-2xl shadow-lg p-1 z-50 w-[150px]`}
                                             >
                                                 <button
-                                                    className="block w-full text-left px-4 py-2 text-black hover:bg-gray-100 rounded"
+                                                    className="block w-full px-4 py-2 text-black hover:bg-gray-100 rounded"
                                                     onClick={() => {
                                                         setActiveMenu(null);
                                                         setActiveEmojiPicker(msg.message_id);
@@ -146,7 +147,7 @@ const ShowMessage = ({
                                                             deleteMessage(msg.message_id);
                                                         }}
                                                     >
-                                                        Delete
+                                                        🗑️ Delete
                                                     </button>
                                                 )}
                                             </div>

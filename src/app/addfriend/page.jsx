@@ -6,7 +6,7 @@ import { fetchFriends } from "@/app/service/FriendService";
 import { addFriend } from "../service/FriendService";
 
 export default function UserListPage() {
-  const [users, setUsers] = useState([]);
+  const [user, setUsers] = useState([]);
   const [listUser, setListUser] = useState([]);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function UserListPage() {
 
   const fetchingAddUser = async (friendId) => {
     try {
-      const response = await addFriend(users.user_id, friendId);
+      const response = await addFriend(user.user_id, friendId);
       //setListUser(response);
       alert("Friend request sent successfully! ", response);
     } catch (error) {
@@ -41,7 +41,7 @@ export default function UserListPage() {
   return (
     <>
       <SideBar />
-      <Friend users={listUser} addUser={fetchingAddUser} />
+      <Friend users={listUser} user={user} />
     </>
   );
 }

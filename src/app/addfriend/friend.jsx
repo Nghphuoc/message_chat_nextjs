@@ -1,31 +1,84 @@
 "use client";
 import { useEffect, useState } from "react";
 import { FaUserPlus, FaEnvelope, FaUsers, FaUserFriends, FaUserCheck } from "react-icons/fa";
+import { searchUsers, acceptFriendRequest, rejectFriendRequest, addFriend } from "@/app/service/FriendService";
 
 
-const Friend = ({ users, addUser }) => {
+const Friend = ({ users, user }) => {
     const [activeTab, setActiveTab] = useState("WAIT");
     const [added, setAdded] = useState({});
     const [messaged, setMessaged] = useState({});
-    const [userList, setUserList] = useState(users.filter(user => user.status === "WAIT"));
+    const [userList, setUserList] = useState([]);
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [suggestions, setSuggestions] = useState([]);
+    const [currentUserId, setCurrentUserId] = useState(user?.user_id || null);
+    
 
     useEffect(() => {
-        let filtered = users.filter(user => user.status === activeTab);
-        if (search.trim() !== "") {
-            const searchLower = search.toLowerCase();
-            filtered = filtered.filter(user =>
-                user.user.display_name.toLowerCase().includes(searchLower) ||
-                user.user.username.toLowerCase().includes(searchLower)
-            );
+        if (users && Array.isArray(users)) {
+            setUserList(users.filter(user => user.status === "WAIT"));
+            setCurrentUserId(user.user_id);
         }
-        setUserList(filtered);
-    }, [users, activeTab, search]);
-    
-    const handleAddFriend = (id) => {
-        setAdded(prev => ({ ...prev, [id]: true }));
-        addUser(id);
+    }, [users, user]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    useEffect(() => {
+        if (activeTab === "suggestions" && debouncedSearch.trim() !== "" && user?.user_id) {
+            const fetchSuggestions = async () => {
+                try {
+                    const response = await searchUsers(user.user_id, debouncedSearch);
+                    setSuggestions(Array.isArray(response) ? response : []);
+                } catch (error) {
+                    console.error("Error searching users:", error);
+                    setSuggestions([]);
+                }
+            };
+            fetchSuggestions();
+        } else if (activeTab === "suggestions") {
+            setSuggestions([]);
+        }
+    }, [activeTab, debouncedSearch, user?.user_id]);
+
+    useEffect(() => {
+        if (activeTab === "suggestions") {
+            setUserList(suggestions || []);
+        } else if (users && Array.isArray(users)) {
+            let filtered = users.filter(user => user.status === activeTab);
+            if (debouncedSearch.trim() !== "") {
+                const searchLower = debouncedSearch.toLowerCase();
+                filtered = filtered.filter(user =>
+                    user.user?.display_name?.toLowerCase().includes(searchLower) ||
+                    user.user?.username?.toLowerCase().includes(searchLower)
+                );
+            }
+            setUserList(filtered);
+        }
+    }, [users, activeTab, debouncedSearch, suggestions]);
+
+    const handleAddFriend = (userId, friendId) => {
+        fetchingAddUser(userId, friendId);
+        setAdded(prev => ({ ...prev, [friendId]: true }));
+
     };
+
+    const fetchingAddUser = async ( userId, friendId ) => {
+        try {
+          const response = await addFriend(userId, friendId);
+          //setListUser(response);
+          alert("Friend request sent successfully! ", response);
+        } catch (error) {
+          console.error("Error adding friend:", error);
+        }
+      };
+    
     const handleMessage = (id) => {
         setMessaged(prev => ({ ...prev, [id]: true }));
         setTimeout(() => setMessaged(prev => ({ ...prev, [id]: false })), 1200);
@@ -34,19 +87,96 @@ const Friend = ({ users, addUser }) => {
     const TABS = [
         { label: "Lời mời kết bạn", key: "WAIT", icon: <FaUserCheck /> },
         { label: "Bạn bè", key: "ACCEPTED", icon: <FaUserFriends /> },
-        { label: "Đã gửi", key: "sent", icon: <FaUsers /> },
+        { label: "Đã gửi", key: "PENDING", icon: <FaUsers /> },
         { label: "Gợi ý", key: "suggestions", icon: <FaUsers /> },
     ];
 
     const handleCheckActiveTab = (tabKey) => {
         let filteredUsers;
-        if (tabKey === "sent") {
-            filteredUsers = users.filter(user => user.status !== "WAIT" && user.status !== "ACCEPTED");
-        } else {
-            filteredUsers = users.filter(user => user.status === tabKey);
+        if (tabKey === "suggestions") {
+
         }
+        filteredUsers = users.filter(user => user.status === tabKey);
         setUserList(filteredUsers);
         setActiveTab(tabKey);
+    };
+
+    const handleReject = async (user_id, friend_id) => {
+        try {
+            const data = await rejectFriendRequest(user_id, friend_id);
+        } catch (error) {
+            console.error("Error rejecting friend request:", error);
+        }
+    };
+
+    const handleAccept = async (user_id, friend_id) => {
+        try {
+            const data = await acceptFriendRequest(user_id, friend_id);
+        } catch (error) {
+            console.error("Error accepting friend request:", error);
+        }
+    };
+
+    const getFriendActions = (userItem, activeTab) => {
+        let status, friendId;
+        if (activeTab === "suggestions") {
+            status = userItem.friendship_status;
+            friendId = userItem.user_id;
+        } else {
+            status = userItem.status;
+            friendId = userItem.user.user_id;
+        }
+
+        switch (status) {
+            case "PENDING":
+                return [
+                    {
+                        text: "Hủy lời mời",
+                        style: "bg-gray-100 text-red-600",
+                        onClick: () => handleCancelRequest(currentUserId, friendId),
+                        disabled: false
+                    }
+                ];
+            case "WAIT":
+                return [
+                    {
+                        text: "Chấp nhận",
+                        style: "bg-green-600 text-white",
+                        onClick: () => handleAccept(currentUserId, friendId),
+                        disabled: false
+                    },
+                    {
+                        text: "Từ chối",
+                        style: "bg-red-600 text-white",
+                        onClick: () => handleReject(currentUserId, friendId),
+                        disabled: false
+                    }
+                ];
+            case "ACCEPTED":
+                return [
+                    {
+                        text: "Nhắn tin",
+                        style: "bg-pink-500 text-white",
+                        onClick: () => handleMessage(friendId),
+                        disabled: false
+                    },
+                    {
+                        text: "Hủy kết bạn",
+                        style: "bg-gray-200 text-red-600",
+                        onClick: () => handleUnfriend(currentUserId, friendId),
+                        disabled: false
+                    }
+                ];
+            default:
+                return [
+                    {
+                        text: "Kết bạn",
+                        style: "bg-blue-600 text-white",
+                        onClick: () => handleAddFriend(friendId, currentUserId),
+                        disabled: false
+                    }
+                ];
+        }
     };
 
     return (
@@ -83,43 +213,51 @@ const Friend = ({ users, addUser }) => {
 
                     {/* List */}
                     <div className="space-y-4 sm:space-y-6">
-                        {userList.length === 0 && (
+                        {(!userList || userList.length === 0) && (
                             <div className="text-center text-gray-400 text-sm py-8">Không tìm thấy bạn bè nào.</div>
                         )}
-                        {userList.map((user) => (
+                        {userList && userList.map((user) => (
                             <div
-                                key={user.user.user_id}
+                                key={activeTab === "suggestions" ? user.user_id : user.user.user_id}
                                 className="flex flex-col sm:flex-row items-center bg-white rounded-2xl shadow-md p-3 sm:p-4 gap-3 sm:gap-4 hover:shadow-lg transition-all duration-300 group"
                             >
                                 <img
-                                    src={user.user.img_url}
-                                    alt={user.display_name}
+                                    src={activeTab === "suggestions" ? user.img_url : user.user.img_url}
+                                    alt={activeTab === "suggestions" ? user.display_name : user.user.display_name}
                                     className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-blue-200 group-hover:scale-105 transition-transform duration-300"
                                 />
 
                                 <div className="flex-1 min-w-0 text-center sm:text-left">
-                                    <div className="font-semibold text-sm sm:text-base text-gray-900">{user.user.display_name}</div>
-                                    <div className="text-xs sm:text-sm text-gray-600">@{user.user.username}</div>
-                                    <div className="text-xs text-gray-400">{user.user.email}</div>
-                                    <div className="text-xs text-blue-500 font-medium mt-1">{user.user.role?.role_name}</div>
+                                    <div className="font-semibold text-sm sm:text-base text-gray-900">
+                                        {activeTab === "suggestions" ? user.display_name : user.user.display_name}
+                                    </div>
+                                    {activeTab !== "suggestions" && (
+                                        <>
+                                            <div className="text-xs sm:text-sm text-gray-600">@{user.user.username}</div>
+                                            <div className="text-xs text-gray-400">{user.user.email}</div>
+                                            <div className="text-xs text-blue-500 font-medium mt-1">{user.user.role?.role_name}</div>
+                                        </>
+                                    )}
+                                    {activeTab === "suggestions" && (
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            Trạng thái: {user.friendship_status === "PENDING" ? "Đã gửi lời mời" :
+                                                user.friendship_status === "WAIT" ? "Chờ phản hồi" :
+                                                    user.friendship_status === "ACCEPTED" ? "Đã kết bạn" : "Chưa kết bạn"}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-row sm:flex-col gap-2 min-w-[120px] justify-center sm:justify-start">
-                                    <button
-                                        onClick={() => handleAddFriend(user.user.user_id)}
-                                        disabled={added[user.user.user_id]}
-                                        className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium text-xs sm:text-sm shadow
-                                        ${user.status === "PENDING" ? 'bg-gray-100 text-green-600 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'}`}
-                                    >
-                                        <FaUserPlus /> {user.status === "PENDING" ? "Cancel request" : "Kết bạn"}
-                                    </button>
-
-                                    <button
-                                        onClick={() => handleMessage(user.user.user_id)}
-                                        className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium text-xs sm:text-sm shadow bg-pink-500 text-white hover:bg-pink-600 active:scale-95 ${messaged[user.user.user_id] ? 'animate-pulse' : ''}`}
-                                    >
-                                        <FaEnvelope /> {messaged[user.user.user_id] ? "Đã gửi!" : "Nhắn tin"}
-                                    </button>
+                                    {getFriendActions(user, activeTab, user.user_id).map((action, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={action.onClick}
+                                            disabled={action.disabled}
+                                            className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium text-xs sm:text-sm shadow ${action.style}`}
+                                        >
+                                            {action.text}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         ))}

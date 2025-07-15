@@ -1,4 +1,5 @@
 "use client";
+// ====== IMPORTS ======
 import { useRef, useState, useEffect } from "react";
 import "../../css/hiddenscroll.css";
 import 'dayjs/locale/vi';
@@ -6,11 +7,9 @@ import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { deleteIcon } from '@/app/service/MessageService'
 
+const EMOJIS = ["😁", "❤️", "😍", "👍", "😭", "😡"];
 
-const EMOJIS = [
-    "😁", "❤️", "😍", "👍", "😭", "😡"
-];
-
+// ====== COMPONENT ======
 const ShowMessage = ({
     scrollRef,
     messages,
@@ -25,27 +24,11 @@ const ShowMessage = ({
     remove,
     deleteMessage
 }) => {
-
-    //const emojiPickerRef = useRef(null);
-    const formatTimeHeader = (date) => {
-        if (isToday(date)) return 'Hôm nay';
-        if (isYesterday(date)) return 'Hôm qua';
-        return format(date, 'EEEE, dd/MM/yyyy', { locale: vi });
-    };
-
-    const fetchingDeletereaction = async (reaction_id, user_id) => {
-        console.log("reaction id: ".reaction_id);
-        try {
-            const response = await deleteIcon(reaction_id, user_id);
-            console.log(response);
-        } catch (error) {
-            console.error("error: ", error);
-        }
-    }
-
+    // ====== STATE & REF ======
     const [activeMenu, setActiveMenu] = useState(null); // message_id của menu đang mở
     const menuRef = useRef(null);
 
+    // ====== EFFECT: Đóng menu/emoji picker khi click ra ngoài ======
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -62,11 +45,30 @@ const ShowMessage = ({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [setActiveEmojiPicker]);
 
+    // ====== HELPER: Định dạng ngày cho header ======
+    const formatTimeHeader = (date) => {
+        if (isToday(date)) return 'Hôm nay';
+        if (isYesterday(date)) return 'Hôm qua';
+        return format(date, 'EEEE, dd/MM/yyyy', { locale: vi });
+    };
+
+    // ====== API: Xóa reaction (không dùng trực tiếp ở đây) ======
+    const fetchingDeletereaction = async (reaction_id, user_id) => {
+        try {
+            const response = await deleteIcon(reaction_id, user_id);
+            console.log(response);
+        } catch (error) {
+            console.error("error: ", error);
+        }
+    }
+
+    // ====== RENDER ======
     return (
         <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto p-4 space-y-3 bg-white scrollbar-hide"
         >
+            {/* ====== HIỂN THỊ DANH SÁCH TIN NHẮN ====== */}
             {messages && messages.length > 0 ? (
                 messages.map((msg, index) => {
                     const isMe = msg.user_id === USER_ID;
@@ -107,7 +109,7 @@ const ShowMessage = ({
                                                 ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-br-md'
                                                 : 'bg-gray-200 text-gray-900 rounded-2xl rounded-bl-md'}`} >
                                         <p>{msg.content}</p>
-                                        {/* Three dots menu button */}
+                                        {/* ====== NÚT BA CHẤM (MENU) ====== */}
                                         <button
                                             onClick={() => setActiveMenu(activeMenu === msg.message_id ? null : msg.message_id)}
                                             className={`absolute -bottom-2 p-1.5 rounded-full opacity-0 group-hover:opacity-100 ${isMe
@@ -121,7 +123,7 @@ const ShowMessage = ({
                                                 <circle cx="19" cy="12" r="2" />
                                             </svg>
                                         </button>
-                                        {/* Menu options */}
+                                        {/* ====== MENU LỰA CHỌN ====== */}
                                         {activeMenu === msg.message_id && (
                                             <div
                                                 ref={menuRef}
@@ -149,7 +151,7 @@ const ShowMessage = ({
                                                 )}
                                             </div>
                                         )}
-                                        {/* Emoji picker button add emoji */}
+                                        {/* ====== EMOJI PICKER ====== */}
                                         {activeEmojiPicker === msg.message_id && (
                                             <div
                                                 ref={emojiPickerRef}
@@ -174,7 +176,7 @@ const ShowMessage = ({
                                             </div>
                                         )}
                                     </div>
-                                    {/* Reactions display ( show ) click again to delete */}
+                                    {/* ====== HIỂN THỊ REACTION ====== */}
                                     {Array.isArray(msg.icon) && msg.icon.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {msg.icon.map((reaction) => (
@@ -205,6 +207,7 @@ const ShowMessage = ({
                     );
                 })
             ) : (
+                // ====== KHÔNG CÓ TIN NHẮN ======
                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
                     <img
                         className="rounded-full ring-2 ring-white shadow-sm mb-4"
@@ -221,7 +224,7 @@ const ShowMessage = ({
                     </p>
                 </div>
             )}
-            {/* Typing Indicator */}
+            {/* ====== TYPING INDICATOR ====== */}
             {isTyping && (
                 <div className="flex space-x-2">
                     <div className="z-50 w-8 h-8 bg-gradient-to-b from-violet-700/80 to-blue-900/80 rounded-full flex items-center justify-center">

@@ -95,13 +95,13 @@ const ShowMessage = ({
                             >
                                 {/* Avatar for others */}
                                 {!isMe && (
-                                    <img
-                                        className="rounded-full ring-2 ring-white shadow-sm flex-shrink-0"
-                                        src={msg.img_url || '/default-avatar.jpg'}
-                                        width="25"
-                                        height="25"
-                                        alt={msg.name_user || 'User'}
-                                    />
+                                    <div className="relative w-3.5 h-3.5 sm:w-5 sm:h-5">
+                                        <img
+                                            className="w-full h-full rounded-full object-cover"
+                                            src={msg.img_url || '/default-avatar.jpg'}
+                                            alt={msg.name_user || 'User'}
+                                        />
+                                    </div>
                                 )}
                                 <div className={`flex flex-col items-${isMe ? 'end' : 'start'}`}>
                                     <div

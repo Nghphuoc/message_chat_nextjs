@@ -42,7 +42,7 @@ export default function ChatList({ selectRoomId }) {
 
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      console.log("message send: ",message);
+      console.log("message send: ", message);
       if (message.type === "status") {
         const { user_id, is_online, last_seen } = message.data;
         updateUserStatus(user_id, is_online, last_seen);
@@ -98,16 +98,15 @@ export default function ChatList({ selectRoomId }) {
       <section className="flex flex-col w-full h-full px-2 py-4 ">
         {/* User Info */}
         <div className="flex items-center space-x-3 sm:space-x-2 mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-sm">
-          <div className="relative">
+          <div className="relative w-10 h-10 sm:w-12 sm:h-12">
             <img
-              className="rounded-full ring-4 ring-white shadow-lg"
+              className="w-full h-full rounded-full object-cover"
               src={user.img_url}
-              width="40"
-              height="40"
               alt={user.display_name}
             />
             <div className="absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
+
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-gray-800 truncate">{user.display_name}</p>
             <p className="text-xs text-gray-500">Online</p>
@@ -202,7 +201,7 @@ export default function ChatList({ selectRoomId }) {
                   {/* <p className="text-xs font-extralight text-gray-400">{!chat.status ? dayjs(chat.last_seen).tz('Asia/Ho_Chi_Minh').fromNow() : ""}</p> */}
                 </div>
                 {/* <p className="text-xs text-gray-500 truncate">{chat.status ? <span className="text-green-500">Online</span> : <span className="text-red-500">Offline</span>}</p> */}
-                <p className="text-xs text-gray-500 truncate font-normal"> {chat.action? (<strong>{chat.action}</strong>) : ("not message")} </p>
+                <p className="text-xs text-gray-500 truncate font-normal"> {chat.action ? (<strong>{chat.action}</strong>) : ("not message")} </p>
 
               </div>
               {chat.unread > 0 && (

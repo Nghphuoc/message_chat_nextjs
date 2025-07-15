@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { fetchOldMessages, sendIcon } from "@/app/service/MessageService";
+import { fetchOldMessages } from "@/app/service/MessageService";
 import "../../css/hiddenscroll.css";
 import ScrollToBottomButton from "@/app/comom/scrollbutton";
 import dayjs from 'dayjs';
@@ -8,8 +8,6 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
-import { format, isToday, isYesterday } from 'date-fns';
-import { ms, vi } from 'date-fns/locale';
 import HeaderChat from "../comom/headerchat";
 import ShowMessage from "@/app/comom/showmessage";
 import InputChat from "@/app/comom/inputchat";
@@ -97,7 +95,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
       const msg = JSON.parse(event.data);
 
       if (msg.type === "error") {
-        toast('Error '+ msg.message,
+        toast('Error ' + msg.message,
           {
             icon: '😭',
             style: {
@@ -122,15 +120,14 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         }
 
         else if (msg.type === "reaction") {
-          const {reaction_id, message_id, emoji, user_id } = msg.data;
+          const { reaction_id, message_id, emoji, user_id } = msg.data;
           handleReaction(reaction_id, message_id, emoji, user_id);
           console.log("reaction: ", msg.data);
         }
 
         else if (msg.type === "cancel_reaction") {
-          const {reaction_id, message_id, user_id } = msg.data;
+          const { reaction_id, message_id, user_id } = msg.data;
           handleCancelReaction(reaction_id, message_id, user_id);
-          // console.log("reaction delete: ", msg.data);
         }
       } catch (error) {
         console.error("Error parsing : ", error);
@@ -156,28 +153,8 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     });
   }, [messages, dataRoom]);
 
-  const fetChingSendIcon = async (messageId, emoji, USER_ID) => {
-    const reaction = {
-      user_id: USER_ID,
-      message_id: messageId,
-      emoji: emoji,
-    };
-
-    try {
-      const data = await sendIcon(reaction);
-      console.log("data response: ", data);
-      return data;
-    } catch (error) {
-      console.error("error send Reaction: ", error);
-    }
-  };
-
   const fetchMessages = useCallback(async () => {
     if (!ROOM_ID) return;
-    // if (messageCache.current[ROOM_ID]) {
-    //   setMessages(messageCache.current[ROOM_ID]);
-    //   return;
-    // }
     try {
       const oldMessages = await fetchOldMessages(ROOM_ID);
       setMessages(oldMessages);
@@ -273,12 +250,12 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
         if (existingIndex !== -1) {
 
-            currentReactions[existingIndex] = {
-              ...currentReactions[existingIndex],
-              emoji,
-              created_at: new Date().toISOString()
-            };
-          
+          currentReactions[existingIndex] = {
+            ...currentReactions[existingIndex],
+            emoji,
+            created_at: new Date().toISOString()
+          };
+
         } else {
           // User chưa có → thêm mới
           currentReactions.push({
@@ -307,7 +284,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     }
 
     const payload = {
-      type: "cancel_reaction",  
+      type: "cancel_reaction",
       data: reaction
     };
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
@@ -322,23 +299,23 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   }
 
   const handleCancelReaction = (reaction_id, message_id, user_id) => {
-  setMessages(prevMessages =>
-    prevMessages.map(msg => {
-      if (msg.message_id !== message_id) return msg;
+    setMessages(prevMessages =>
+      prevMessages.map(msg => {
+        if (msg.message_id !== message_id) return msg;
 
-      const currentReactions = Array.isArray(msg.icon) ? [...msg.icon] : [];
+        const currentReactions = Array.isArray(msg.icon) ? [...msg.icon] : [];
 
-      const updatedReactions = currentReactions.filter(
-        r => !(r.reaction_id === reaction_id && r.user_id === user_id)
-      );
+        const updatedReactions = currentReactions.filter(
+          r => !(r.reaction_id === reaction_id && r.user_id === user_id)
+        );
 
-      return {
-        ...msg,
-        icon: updatedReactions
-      };
-    })
-  );
-};
+        return {
+          ...msg,
+          icon: updatedReactions
+        };
+      })
+    );
+  };
 
 
   useEffect(() => {
@@ -374,16 +351,10 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   if (!dataRoom) {
     return (
       <section className="flex items-center justify-center h-full font-extrabold text-gray-500">
-        <p className="text-2xl text-center">No chat selected. Please select a chat to start messaging.</p>
+        <p className="text-xl text-center">No chat selected. Please select a chat to start messaging.</p>
       </section>
     );
   }
-
-  const formatTimeHeader = (date) => {
-    if (isToday(date)) return 'Hôm nay';
-    if (isYesterday(date)) return 'Hôm qua';
-    return format(date, 'EEEE, dd/MM/yyyy', { locale: vi });
-  };
 
   return (
     <section className="flex flex-col flex-1 bg-gradient-to-br from-white to-gray-50 min-h-screen shadow-lg rounded-2xl border border-gray-200">

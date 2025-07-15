@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { fetchOldMessages } from "@/app/service/MessageService";
+import { fetchOldMessages, deleteMessage } from "@/app/service/MessageService";
 import "../../css/hiddenscroll.css";
 import ScrollToBottomButton from "@/app/comom/scrollbutton";
 import dayjs from 'dayjs';
@@ -192,7 +192,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     }
 
     const payload = {
-      type: "message",  // hoặc "send_message", tuỳ backend
+      type: "message",
       data: {
         content: input.trim(),
       }
@@ -234,7 +234,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
       console.error("Error addReaction function: ", error);
     }
   }
-
 
   const handleReaction = (reaction_id, message_id, emoji, user_id) => {
     setMessages(prevMessages =>

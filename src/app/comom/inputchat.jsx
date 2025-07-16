@@ -23,10 +23,18 @@ const InputChat = ({
     handleInputFocus,
     handleInputBlur
 }) => {
+    // Xử lý Enter gửi, Shift+Enter xuống dòng
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+    
     return (
         <>
             <form
-                className="flex items-center space-x-2 border-t border-gray-200 pt-3 px-4 pb-4 bg-white"
+                className="flex items-center space-x-2 border-t border-gray-200 pt-3 px-4 pb-2 bg-white"
                 onSubmit={(e) => {
                     e.preventDefault();
                     sendMessage();
@@ -43,13 +51,16 @@ const InputChat = ({
                     </svg>
                 </button>
                 <div className="flex-1 relative">
-                    <input
+                    <textarea
                         value={input}
                         onChange={handleInputChange}
                         onFocus={handleInputFocus}
                         onBlur={handleInputBlur}
-                        className="w-full rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onKeyDown={handleKeyDown}
+                        className="w-full rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[36px] max-h-40 overflow-y-auto pr-10 scrollbar-hide"
                         placeholder="Type your message here..."
+                        rows={1}
+                        style={{ lineHeight: '1.5', paddingRight: '2.5rem' }}
                     />
                     {/* Emoji picker button */}
                     <button

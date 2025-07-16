@@ -211,10 +211,8 @@ const ShowMessage = ({
                 // ====== KHÔNG CÓ TIN NHẮN ======
                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
                     <img
-                        className="rounded-full ring-2 ring-white shadow-sm mb-4"
+                        className="h-20 w-20 rounded-full ring-2 ring-white shadow-sm mb-4 object-cover"
                         src={dataRoom.img_url || '/default-avatar.jpg'}
-                        width="80"
-                        height="80"
                         alt={dataRoom.username || 'User'}
                     />
                     <p className="text-sm font-medium">

@@ -1,5 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
+import { register } from "@/app/service/AuthService";
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function RegisterForm() {
   const [step, setStep] = useState(1);
@@ -9,8 +11,24 @@ export default function RegisterForm() {
     password: "",
     username: "",
     display_name: "",
+    created_at: "2025-07-16T06:56:54.883Z",
+    role_id: "",
     img_url: "",
+    flagDelete: 1, // set active (demo)
   });
+
+  const fakeData = ({
+    username: "jineman",
+    password: "12345678",
+    email: "jinemn@example.com",
+    phone: "0909000678",
+    img_url: "",
+    display_name: "ayme",
+    created_at: "2025-07-16T04:23:31.229Z",
+    role_id: "",
+    flagDelete: 1
+  })
+
   const [imgPreview, setImgPreview] = useState("");
   const [imgFile, setImgFile] = useState(null);
   const [imgZoom, setImgZoom] = useState(1);
@@ -19,11 +37,57 @@ export default function RegisterForm() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const fileInputRef = useRef();
   const imgContainerRef = useRef();
+  const [errors, setErrors] = useState({});
 
   // Step navigation
+  const validateStep = () => {
+    let newErrors = {};
+    if (step === 1) {
+      // Email
+      if (!formData.email) {
+        newErrors.email = "Email không được để trống.";
+      } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
+        newErrors.email = "Email không hợp lệ.";
+      }
+      // Phone
+      if (!formData.phone) {
+        newErrors.phone = "Số điện thoại không được để trống.";
+      } else if (!/^0\d{9}$/.test(formData.phone.replace(/\D/g, ''))) {
+        newErrors.phone = "Số điện thoại không hợp lệ.";
+      }
+
+      // Password
+      if (!formData.password) {
+        newErrors.password = "Mật khẩu không được để trống.";
+      } else if (formData.password.length < 8) {
+        newErrors.password = "Mật khẩu phải từ 8 ký tự trở lên.";
+      }
+    }
+    if (step === 2) {
+      if (!formData.username) {
+        newErrors.username = "Username không được để trống.";
+      } else if (formData.username.length < 6) {
+        newErrors.username = "username không được nhỏ hơn 6 ký tự.";
+      }
+
+      if (!formData.display_name) {
+        newErrors.display_name = "display name không được để trống."
+      } else if (formData.display_name.length < 4) {
+        {
+          newErrors.username = "display name không được nhỏ hơn 4 ký tự.";
+        }
+      }
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleNext = (e) => {
     e.preventDefault();
-    setStep(step + 1);
+    if (validateStep()) {
+      setErrors({});
+      setStep(step + 1);
+    }
   };
   const handleBack = (e) => {
     e.preventDefault();
@@ -61,7 +125,6 @@ export default function RegisterForm() {
     e.preventDefault();
   };
 
-  // Crop/zoom logic
   const handleWheel = (e) => {
     e.preventDefault();
     setImgZoom((z) => Math.max(1, Math.min(3, z - e.deltaY * 0.001)));
@@ -78,14 +141,32 @@ export default function RegisterForm() {
     setDragging(false);
   };
 
-  // Confirm avatar
   const handleConfirmAvatar = (e) => {
     e.preventDefault();
-    setStep(4); // Step 4: Done (or redirect, etc.)
+    setStep(4);
+  };
+
+  const fetchingCreateNewUser = async (dataUser) => {
+    try {
+      const response = await register(dataUser);
+      if (response.status !== 201) {
+        toast.success("create Success");
+      } else {
+        toast.error(response.detail?.message);
+      }
+    } catch (error) {
+      toast.error("create error at system (call API function): " + error.message);
+      console.error("error call api register");
+    }
+    handleConfirmAvatar();
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-blue-50 px-2">
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+      />
       <div className="bg-white p-7 rounded-xl shadow w-full max-w-md border border-blue-100">
         <h2 className="text-2xl font-bold text-center mb-2 text-blue-700">Đăng ký tài khoản</h2>
         <div className="flex items-center justify-center mb-6">
@@ -107,6 +188,7 @@ export default function RegisterForm() {
                 className="w-full px-4 py-2 border border-gray-200 rounded-xl"
                 required
               />
+              {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
               <input
                 name="phone"
                 type="tel"
@@ -116,6 +198,7 @@ export default function RegisterForm() {
                 className="w-full px-4 py-2 border border-gray-200 rounded-xl"
                 required
               />
+              {errors.phone && <div className="text-red-500 text-xs mt-1">{errors.phone}</div>}
               <input
                 name="password"
                 type="password"
@@ -125,6 +208,7 @@ export default function RegisterForm() {
                 className="w-full px-4 py-2 border border-gray-200 rounded-xl"
                 required
               />
+              {errors.password && <div className="text-red-500 text-xs mt-1">{errors.password}</div>}
               <button
                 type="button"
                 onClick={handleNext}
@@ -145,6 +229,7 @@ export default function RegisterForm() {
                 className="w-full px-4 py-2 border border-gray-200 rounded-xl"
                 required
               />
+              {errors.username && <div className="text-red-500 text-xs mt-1">{errors.username}</div>}
               <input
                 name="display_name"
                 type="text"
@@ -226,7 +311,7 @@ export default function RegisterForm() {
                   </button>
                   <button
                     type="button"
-                    onClick={handleConfirmAvatar}
+                    onClick={() => fetchingCreateNewUser(formData)}
                     className="flex-1 bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition"
                   >
                     Confirm

@@ -1,6 +1,7 @@
 "use client";
 import "../../css/hiddenscroll.css";
 import { GoArrowLeft } from "react-icons/go";
+import { FiMoreVertical } from "react-icons/fi";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -17,6 +18,7 @@ dayjs.locale('vi');
 
 const HeaderChat = ({ dataRoom }) => {
   const [data, setData] = useState([]);
+  const [checkShow, setCheckShow] = useState(false);
 
   useEffect(() => {
     setData(dataRoom);
@@ -81,11 +83,22 @@ const HeaderChat = ({ dataRoom }) => {
           <IoVideocam />
         </button>
 
-        <button className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200">
-          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
+        {/* Button menu + popup */}
+        <div className="relative">
+          <button
+            className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all duration-200"
+            onClick={() => setCheckShow(!checkShow)}
+          >
+            <FiMoreVertical />
+          </button>
+
+          {checkShow && (
+            <ul className="absolute right-0 top-full mt-2 bg-white border border-gray-300 shadow rounded-xl w-40 z-50 text-black text-sm">
+              <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Test</li>
+              <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Demo</li>
+            </ul>
+          )}
+        </div>
 
       </div>
     </header>

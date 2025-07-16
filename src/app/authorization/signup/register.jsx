@@ -141,24 +141,21 @@ export default function RegisterForm() {
     setDragging(false);
   };
 
-  const handleConfirmAvatar = (e) => {
-    e.preventDefault();
-    setStep(4);
-  };
-
   const fetchingCreateNewUser = async (dataUser) => {
     try {
       const response = await register(dataUser);
-      if (response.status !== 201) {
+      console.log("data register: ", response);
+      if (response.status === 201) {
         toast.success("create Success");
+        setStep(4);
+
       } else {
-        toast.error(response.detail?.message);
+        toast.error(response.data?.detail?.message);
       }
     } catch (error) {
-      toast.error("create error at system (call API function): " + error.message);
+      toast.error(error.message);
       console.error("error call api register");
     }
-    handleConfirmAvatar();
   };
 
   return (

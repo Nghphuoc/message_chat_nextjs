@@ -15,7 +15,7 @@ export const login = async (user) => {
 export const register = async (user) => {
   try {
     const response = await axios.post(`${API_URL}/auth/register`, user);
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Registration error:", error.response?.data);
 

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { FaGoogle, FaFacebook, FaGithub } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import { register, login } from '@/app/service/AuthService'; // Import your AuthService methods
+import { login } from '@/app/service/AuthService'; // Import your AuthService methods
 import toast, { Toaster } from 'react-hot-toast';
 export default function LoginPage() {
     const router = useRouter();

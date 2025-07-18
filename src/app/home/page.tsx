@@ -135,6 +135,7 @@ const PageRoot = () => {
           >
             <RightPanel />
           </div>
+          
         </div>
       </div>
     </>

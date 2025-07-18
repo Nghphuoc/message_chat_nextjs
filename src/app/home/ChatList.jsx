@@ -198,18 +198,14 @@ export default function ChatList({ selectRoomId }) {
               <div className="flex flex-col flex-1 min-w-0">
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-semibold text-gray-800 truncate">{chat.username}</p>
-                  {/* <p className="text-xs font-extralight text-gray-400">{!chat.status ? dayjs(chat.last_seen).tz('Asia/Ho_Chi_Minh').fromNow() : ""}</p> */}
                 </div>
-                {/* <p className="text-xs text-gray-500 truncate">{chat.status ? <span className="text-green-500">Online</span> : <span className="text-red-500">Offline</span>}</p> */}
                 <p className="text-xs text-gray-500 truncate font-normal"> {chat.action ? (<strong>{chat.action}</strong>) : ("not message")} </p>
-
               </div>
-              {chat.unread > 0 && (
-                <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-sm">
-                  {chat.unread || 0}
+
+              {chat.unread && (
+                <div className="w-2 h-2 bg-red-400 text-white text-xs font-medium rounded-full flex items-center justify-center shadow-sm">
                 </div>
               )}
-
             </li>
           ))}
         </ul>

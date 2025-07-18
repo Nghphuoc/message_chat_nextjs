@@ -33,6 +33,8 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [activeEmojiPicker, setActiveEmojiPicker] = useState(null);
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false);
+  const [replyingMessage, setReplyingMessage] = useState(null);
+
 
   const messageCache = useRef({});
   const connectionRef = useRef(null);
@@ -152,12 +154,16 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
     const payload = {
       type: "message",
-      data: { content: input.trim() },
+      data: {
+        content: input.trim(),
+        reply: replyingMessage?.message_id || null,
+      },
     };
 
     try {
       ws.current.send(JSON.stringify(payload));
       setInput("");
+      setReplyingMessage("");
       setIsTyping(false);
       clearTimeout(typingTimeoutRef.current);
     } catch (error) {
@@ -174,11 +180,17 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
       });
       return;
     }
-
     if (msg.type === "message") {
+      const newMessage = msg.data;
+      const messageWithReply = {
+        ...newMessage,
+        reply: newMessage.reply ?? null,
+      };
+
       setMessages(prev => {
-        if (prev.some(m => m.message_id === msg.data.message_id)) return prev;
-        const updated = [...prev, msg.data];
+        if (prev.some(m => m.message_id === messageWithReply.message_id)) return prev;
+
+        const updated = [...prev, messageWithReply];
         messageCache.current[ROOM_ID] = updated;
         return updated;
       });
@@ -212,10 +224,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   };
 
   // Reactions
-  const toggleEmojiPicker = useCallback((messageId) => {
-    setActiveEmojiPicker(prev => (prev === messageId ? null : messageId));
-  }, []);
-
   const addReaction = (message_id, emoji, user_id) => {
     const payload = { type: "reaction", data: { user_id, message_id, emoji } };
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
@@ -303,11 +311,12 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         activeEmojiPicker={activeEmojiPicker}
         setActiveEmojiPicker={setActiveEmojiPicker}
         addReaction={addReaction}
-        toggleEmojiPicker={toggleEmojiPicker}
         emojiPickerRef={emojiPickerRef}
         remove={removeReacion}
         deleteMessage={removeMessage}
         onRightClick={handleRightClick}
+        setReplyingMessage={setReplyingMessage}
+        replyingMessage={replyingMessage}
       />
       <InputChat
         input={input}
@@ -323,6 +332,8 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         handleInputChange={handleInputChange}
         handleInputFocus={handleInputFocus}
         handleInputBlur={handleInputBlur}
+        replyingMessage={replyingMessage}
+        setReplyingMessage={setReplyingMessage}
       />
       <div className="absolute bottom-15 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <ScrollToBottomButton scrollRef={scrollRef} />

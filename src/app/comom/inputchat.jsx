@@ -2,6 +2,7 @@
 import { FiPaperclip } from "react-icons/fi";
 import { GrEmoji } from "react-icons/gr";
 import { GoPaperAirplane } from "react-icons/go";
+import { useRef, useEffect } from "react";
 
 // Emoji data
 const EMOJIS = [
@@ -25,6 +26,12 @@ const InputChat = ({
     setReplyingMessage,
     replyingMessage
 }) => {
+    const inputRef = useRef(null);
+    useEffect(() => {
+        if (replyingMessage && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [replyingMessage]);
     // Xử lý Enter gửi, Shift+Enter xuống dòng
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -77,6 +84,7 @@ const InputChat = ({
                     {/* Input TextArea + Emoji */}
                     <div className="relative flex items-center bg-white border border-gray-200 rounded-full px-3 py-2 shadow-sm">
                         <textarea
+                            ref={inputRef}
                             value={input}
                             onChange={handleInputChange}
                             onFocus={handleInputFocus}

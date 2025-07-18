@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FaUserPlus, FaEnvelope, FaUsers, FaUserFriends, FaUserCheck } from "react-icons/fa";
+import { FaUsers, FaUserFriends, FaUserCheck } from "react-icons/fa";
 import { searchUsers, acceptFriendRequest, rejectFriendRequest, addFriend } from "@/app/service/FriendService";
 
 

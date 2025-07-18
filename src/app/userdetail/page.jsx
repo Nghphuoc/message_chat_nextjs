@@ -1,6 +1,8 @@
 'use client';
 import UserDetailPage from "./UserDetail";
 import { useState, useEffect } from "react";
+import withAuth from '@/app/utils/withAuth';
+
 
 const RootPage = () => {
   const [user, setUser] = useState(null);
@@ -20,4 +22,4 @@ const RootPage = () => {
   );
 }
 
-export default RootPage;
+export default withAuth(RootPage);

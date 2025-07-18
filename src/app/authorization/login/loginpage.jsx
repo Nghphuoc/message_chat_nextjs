@@ -28,7 +28,7 @@ export default function LoginPage() {
 
             if (data?.access_token) {
                 toast.success('Login successful!');
-
+                
                 // Save to session storage
                 sessionStorage.setItem('user', JSON.stringify(data.infor_user || {}));
                 sessionStorage.setItem('token', data.access_token);

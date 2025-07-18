@@ -3,9 +3,9 @@ import Friend from "./friend";
 import SideBar from "@/app/home/sideBar";
 import { useState, useEffect } from "react";
 import { fetchFriends } from "@/app/service/FriendService";
-import { addFriend } from "../service/FriendService";
+import withAuth from '@/app/utils/withAuth';
 
-export default function UserListPage() {
+function UserListPage() {
   const [user, setUsers] = useState([]);
   const [listUser, setListUser] = useState([]);
 
@@ -28,16 +28,6 @@ export default function UserListPage() {
     }
   };
 
-  const fetchingAddUser = async (friendId) => {
-    try {
-      const response = await addFriend(user.user_id, friendId);
-      //setListUser(response);
-      alert("Friend request sent successfully! ", response);
-    } catch (error) {
-      console.error("Error adding friend:", error);
-    }
-  };
-
   return (
     <>
       <SideBar />
@@ -45,3 +35,5 @@ export default function UserListPage() {
     </>
   );
 }
+
+export default withAuth(UserListPage);

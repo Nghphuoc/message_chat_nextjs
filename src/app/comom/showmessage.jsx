@@ -111,8 +111,15 @@ const ShowMessage = ({
                         index > 0 ? new Date(messages[index - 1].created_at) : null;
                     const showTimeHeader =
                         index === 0 || !isSameDay(currentDate, prevDate);
+
+                    const isNearBottom = (() => {
+                        const el = document.getElementById(`msg-${msg.message_id}`);
+                        if (!el) return false;
+                        const rect = el.getBoundingClientRect();
+                        return rect.bottom > window.innerHeight - 100;
+                    })();
                     return (
-                        <div key={msg.message_id} onContextMenu={(e) => onRightClick(e, msg.message_id)}>
+                        <div id={`msg-${msg.message_id}`} key={msg.message_id} onContextMenu={(e) => onRightClick(e, msg.message_id)}>
                             {showTimeHeader && (
                                 <div className="flex justify-center text-xs text-gray-500 my-2">
                                     {formatTimeHeader(currentDate)}
@@ -157,7 +164,9 @@ const ShowMessage = ({
                                         {activeMenu === msg.message_id && (
                                             <div
                                                 ref={menuRef}
-                                                className={`absolute top-full mt-2 ${isMe ? 'right-1/8' : 'left-1/8'} bg-white border border-gray-200 rounded-2xl shadow-lg p-1 z-50 w-[150px]`}
+                                                className={`absolute z-50 w-[150px] bg-white border border-gray-200 rounded-2xl shadow-lg p-1
+                                                ${isMe ? 'right-1/8' : 'left-1/8'}
+                                                ${isNearBottom ? 'bottom-full mb-2' : 'top-full mt-2'}`}
                                             >
                                                 <button
                                                     className="block w-full px-4 py-2 text-left text-black hover:bg-gray-100 rounded"
@@ -209,9 +218,9 @@ const ShowMessage = ({
                                         {activeEmojiPicker === msg.message_id && (
                                             <div
                                                 ref={emojiPickerRef}
-                                                className={`absolute top-full mt-2
-                                                    ${isMe ? 'right-1/8' : 'left-1/8'}
-                                                    bg-white border border-gray-200 rounded-2xl shadow-lg p-1 pl-3 pr-3 z-50 w-[300px]`}
+                                                className={`absolute ${isNearBottom ? 'bottom-full mb-2' : 'top-full mt-2'}
+                                                ${isMe ? 'right-1/8' : 'left-1/8'}
+                                                bg-white border border-gray-200 rounded-2xl shadow-lg p-1 pl-3 pr-3 z-50 w-[300px]`}
                                             >
                                                 <div className="grid grid-cols-6 gap-1 p-1">
                                                     {EMOJIS.map((emoji, index) => (

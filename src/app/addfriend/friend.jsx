@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FaUsers, FaUserFriends, FaUserCheck } from "react-icons/fa";
+import { FaUsers, FaUserFriends, FaUserCheck, FaSearchPlus } from "react-icons/fa";
 import { searchUsers, acceptFriendRequest, rejectFriendRequest, addFriend } from "@/app/service/FriendService";
 
 
@@ -13,6 +13,7 @@ const Friend = ({ users, user }) => {
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [currentUserId, setCurrentUserId] = useState(user?.user_id || null);
+    const [isLoading, setIsLoading] = useState(false);
     
 
     useEffect(() => {
@@ -34,11 +35,14 @@ const Friend = ({ users, user }) => {
         if (activeTab === "suggestions" && debouncedSearch.trim() !== "" && user?.user_id) {
             const fetchSuggestions = async () => {
                 try {
+                    setIsLoading(true);
                     const response = await searchUsers(user.user_id, debouncedSearch);
                     setSuggestions(Array.isArray(response) ? response : []);
                 } catch (error) {
                     console.error("Error searching users:", error);
                     setSuggestions([]);
+                } finally {
+                    setIsLoading(false);
                 }
             };
             fetchSuggestions();
@@ -88,7 +92,7 @@ const Friend = ({ users, user }) => {
         { label: "Lời mời kết bạn", key: "WAIT", icon: <FaUserCheck /> },
         { label: "Bạn bè", key: "ACCEPTED", icon: <FaUserFriends /> },
         { label: "Đã gửi", key: "PENDING", icon: <FaUsers /> },
-        { label: "Gợi ý", key: "suggestions", icon: <FaUsers /> },
+        { label: "Tìm Kiếm", key: "suggestions", icon: <FaSearchPlus  /> },
     ];
 
     const handleCheckActiveTab = (tabKey) => {
@@ -133,7 +137,7 @@ const Friend = ({ users, user }) => {
                     {
                         text: "Hủy lời mời",
                         style: "bg-gray-100 text-red-600",
-                        onClick: () => handleCancelRequest(currentUserId, friendId),
+                        //onClick: () => handleCancelRequest(currentUserId, friendId),
                         disabled: false
                     }
                 ];
@@ -163,7 +167,7 @@ const Friend = ({ users, user }) => {
                     {
                         text: "Hủy kết bạn",
                         style: "bg-gray-200 text-red-600",
-                        onClick: () => handleUnfriend(currentUserId, friendId),
+                        onClick: () => handleReject(currentUserId, friendId),
                         disabled: false
                     }
                 ];
@@ -213,54 +217,76 @@ const Friend = ({ users, user }) => {
 
                     {/* List */}
                     <div className="space-y-4 sm:space-y-6">
-                        {(!userList || userList.length === 0) && (
-                            <div className="text-center text-gray-400 text-sm py-8">Không tìm thấy bạn bè nào.</div>
-                        )}
-                        {userList && userList.map((user) => (
-                            <div
-                                key={activeTab === "suggestions" ? user.user_id : user.user.user_id}
-                                className="flex flex-col sm:flex-row items-center bg-white rounded-2xl shadow-md p-3 sm:p-4 gap-3 sm:gap-4 hover:shadow-lg transition-all duration-300 group"
-                            >
-                                <img
-                                    src={activeTab === "suggestions" ? user.img_url : user.user.img_url}
-                                    alt={activeTab === "suggestions" ? user.display_name : user.user.display_name}
-                                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-blue-200 group-hover:scale-105 transition-transform duration-300"
-                                />
-
-                                <div className="flex-1 min-w-0 text-center sm:text-left">
-                                    <div className="font-semibold text-sm sm:text-base text-gray-900">
-                                        {activeTab === "suggestions" ? user.display_name : user.user.display_name}
+                        {isLoading ? (
+                            // Skeleton loading UI
+                            Array.from({ length: 4 }).map((_, idx) => (
+                                <div
+                                    key={idx}
+                                    className="flex flex-col sm:flex-row items-center bg-white rounded-2xl shadow-md p-3 sm:p-4 gap-3 sm:gap-4 animate-pulse"
+                                >
+                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gray-200" />
+                                    <div className="flex-1 min-w-0 text-center sm:text-left">
+                                        <div className="h-4 bg-gray-200 rounded w-1/2 mb-2 mx-auto sm:mx-0" />
+                                        <div className="h-3 bg-gray-100 rounded w-1/3 mb-1 mx-auto sm:mx-0" />
+                                        <div className="h-3 bg-gray-100 rounded w-1/4 mx-auto sm:mx-0" />
                                     </div>
-                                    {activeTab !== "suggestions" && (
-                                        <>
-                                            <div className="text-xs sm:text-sm text-gray-600">@{user.user.username}</div>
-                                            <div className="text-xs text-gray-400">{user.user.email}</div>
-                                            <div className="text-xs text-blue-500 font-medium mt-1">{user.user.role?.role_name}</div>
-                                        </>
-                                    )}
-                                    {activeTab === "suggestions" && (
-                                        <div className="text-xs text-gray-500 mt-1">
-                                            Trạng thái: {user.friendship_status === "PENDING" ? "Đã gửi lời mời" :
-                                                user.friendship_status === "WAIT" ? "Chờ phản hồi" :
-                                                    user.friendship_status === "ACCEPTED" ? "Đã kết bạn" : "Chưa kết bạn"}
-                                        </div>
-                                    )}
+                                    <div className="flex flex-row sm:flex-col gap-2 min-w-[120px] justify-center sm:justify-start">
+                                        <div className="h-8 w-20 bg-gray-200 rounded-full" />
+                                    </div>
                                 </div>
+                            ))
+                        ) : (
+                            <>
+                                {(!userList || userList.length === 0) && (
+                                    <div className="text-center text-gray-400 text-sm py-8">Không tìm thấy bạn bè nào.</div>
+                                )}
+                                {userList && userList.map((user) => (
+                                    <div
+                                        key={activeTab === "suggestions" ? user.user_id : user.user?.user_id}
+                                        className="flex flex-col sm:flex-row items-center bg-white rounded-2xl shadow-md p-3 sm:p-4 gap-3 sm:gap-4 hover:shadow-lg transition-all duration-300 group"
+                                    >
+                                        <img
+                                            src={activeTab === "suggestions" ? user?.img_url : user.user?.img_url}
+                                            alt={activeTab === "suggestions" ? user.display_name : user.user?.display_name}
+                                            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-blue-200 group-hover:scale-105 transition-transform duration-300"
+                                        />
 
-                                <div className="flex flex-row sm:flex-col gap-2 min-w-[120px] justify-center sm:justify-start">
-                                    {getFriendActions(user, activeTab, user.user_id).map((action, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={action.onClick}
-                                            disabled={action.disabled}
-                                            className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium text-xs sm:text-sm shadow ${action.style}`}
-                                        >
-                                            {action.text}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
+                                        <div className="flex-1 min-w-0 text-center sm:text-left">
+                                            <div className="font-semibold text-sm sm:text-base text-gray-900">
+                                                {activeTab === "suggestions" ? user.display_name : user.user?.display_name}
+                                            </div>
+                                            {activeTab !== "suggestions" && (
+                                                <>
+                                                    <div className="text-xs sm:text-sm text-gray-600">@{user.user?.username}</div>
+                                                    <div className="text-xs text-gray-400">{user.user?.email}</div>
+                                                    <div className="text-xs text-blue-500 font-medium mt-1">{user.user.role?.role_name}</div>
+                                                </>
+                                            )}
+                                            {activeTab === "suggestions" && (
+                                                <div className="text-xs text-gray-500 mt-1">
+                                                    Trạng thái: {user.friendship_status === "PENDING" ? "Đã gửi lời mời" :
+                                                        user.friendship_status === "WAIT" ? "Chờ phản hồi" :
+                                                            user.friendship_status === "ACCEPTED" ? "Đã kết bạn" : "Chưa kết bạn"}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex flex-row sm:flex-col gap-2 min-w-[120px] justify-center sm:justify-start">
+                                            {getFriendActions(user, activeTab, user.user_id).map((action, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={action.onClick}
+                                                    disabled={action.disabled}
+                                                    className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium text-xs sm:text-sm shadow ${action.style}`}
+                                                >
+                                                    {action.text}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

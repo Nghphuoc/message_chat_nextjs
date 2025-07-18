@@ -14,7 +14,6 @@ const RootPage = () => {
     }
   }, []);
 
-  if (!user) return <div>Loading...</div>;
   return (
     <>
     <UserDetailPage user = {user}></UserDetailPage>

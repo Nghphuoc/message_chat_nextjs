@@ -291,7 +291,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   };
 
   // UI render
-  if (!user) return <div className="items-center text-center text-2xl text-indigo-500">Loading...</div>;
   if (!dataRoom) return (
     <section className="flex items-center justify-center h-full font-extrabold text-gray-500">
       <p className="text-xl text-center">No chat selected. Please select a chat to start messaging.</p>

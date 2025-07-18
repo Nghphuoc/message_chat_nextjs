@@ -21,7 +21,9 @@ const InputChat = ({
     inputEmojiPickerRef,
     handleInputChange,
     handleInputFocus,
-    handleInputBlur
+    handleInputBlur,
+    setReplyingMessage,
+    replyingMessage
 }) => {
     // Xử lý Enter gửi, Shift+Enter xuống dòng
     const handleKeyDown = (e) => {
@@ -30,7 +32,11 @@ const InputChat = ({
             sendMessage();
         }
     };
-    
+    const checkFoucusInput = () => {
+        if (replyingMessage) {
+            handleInputFocus = true;
+        }
+    };
     return (
         <>
             <form
@@ -50,33 +56,55 @@ const InputChat = ({
                         <FiPaperclip />
                     </svg>
                 </button>
-                <div className="flex-1 relative">
-                    <textarea
-                        value={input}
-                        onChange={handleInputChange}
-                        onFocus={handleInputFocus}
-                        onBlur={handleInputBlur}
-                        onKeyDown={handleKeyDown}
-                        className="w-full rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[36px] max-h-40 overflow-y-auto pr-10 scrollbar-hide"
-                        placeholder="Type your message here..."
-                        rows={1}
-                        style={{ lineHeight: '1.5', paddingRight: '2.5rem' }}
-                    />
-                    {/* Emoji picker button */}
-                    <button
-                        type="button"
-                        onClick={() => setShowInputEmojiPicker(v => !v)}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
-                    >
-                        <GrEmoji />
-                    </button>
-                    {/* Emoji picker for input */}
+                <div className="relative w-full">
+                    {/* Reply Preview */}
+                    {replyingMessage && (
+                        <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-l-4 border-blue-500 rounded-t-md text-sm">
+                            <div className="truncate max-w-[85%] text-gray-800">
+                                <span className="font-semibold">{replyingMessage.name_user}</span>: {replyingMessage.content}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setReplyingMessage(null)}
+                                className="text-gray-400 hover:text-gray-700 text-xs ml-2"
+                                title="Cancel reply"
+                            >
+                                ❌
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Input TextArea + Emoji */}
+                    <div className="relative flex items-center bg-white border border-gray-200 rounded-full px-3 py-2 shadow-sm">
+                        <textarea
+                            value={input}
+                            onChange={handleInputChange}
+                            onFocus={handleInputFocus}
+                            onBlur={handleInputBlur}
+                            onKeyDown={handleKeyDown}
+                            rows={1}
+                            placeholder="Type your message here..."
+                            className="w-full resize-none bg-transparent text-sm text-gray-700 focus:outline-none scrollbar-hide max-h-40 pr-9"
+                            style={{ lineHeight: '1.5' }}
+                        />
+
+                        {/* Emoji Picker Button */}
+                        <button
+                            type="button"
+                            onClick={() => setShowInputEmojiPicker(v => !v)}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                        >
+                            <GrEmoji />
+                        </button>
+                    </div>
+
+                    {/* Emoji Picker */}
                     {showInputEmojiPicker && (
                         <div
                             ref={inputEmojiPickerRef}
-                            className="absolute bottom-10 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-1.5 z-50 w-[200px]"
+                            className="absolute bottom-14 right-2 bg-white border border-gray-200 rounded-lg shadow-xl p-2 z-50 w-[220px]"
                         >
-                            <div className="grid grid-cols-6 gap-1 max-h-40">
+                            <div className="grid grid-cols-6 gap-1 max-h-40 overflow-y-auto scrollbar-hide">
                                 {EMOJIS.map((emoji, index) => (
                                     <button
                                         key={index}
@@ -91,6 +119,7 @@ const InputChat = ({
                         </div>
                     )}
                 </div>
+
                 <button
                     type="submit"
                     title="send message"

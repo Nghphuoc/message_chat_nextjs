@@ -6,6 +6,8 @@ import 'dayjs/locale/vi';
 import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { Toaster, toast } from "react-hot-toast";
+import { LuCornerUpLeft } from "react-icons/lu";
+
 
 const EMOJIS = ["😁", "❤️", "😍", "👍", "😭", "😡"];
 
@@ -19,15 +21,17 @@ const ShowMessage = ({
     activeEmojiPicker,
     setActiveEmojiPicker,
     addReaction,
-    toggleEmojiPicker,
     emojiPickerRef,
     remove,
     deleteMessage,
-    onRightClick
+    onRightClick,
+    setReplyingMessage,
+    replyingMessage
 }) => {
     // ====== STATE & REF ======
     const [activeMenu, setActiveMenu] = useState(null); // message_id của menu đang mở
     const menuRef = useRef(null);
+
 
     // ====== EFFECT: Đóng menu/emoji picker khi click ra ngoài ======
     useEffect(() => {
@@ -64,6 +68,27 @@ const ShowMessage = ({
             .replace(emailRegex, (email) => `<a href="mailto:${email}" class="underline">${email}</a>`);
         return <span dangerouslySetInnerHTML={{ __html: formatted }} />;
     }
+
+    function renderReplyMessage(msg, isMe) {
+        if (!msg.reply) return null;
+
+        return (
+            <div
+                className={`relative mb-1 px-3 py-2 rounded-2xl text-sm ${isMe ? 'bg-blue-50 text-gray-800' : 'bg-gray-100 text-gray-700'
+                    } border-l-4 ${isMe ? 'border-blue-400' : 'border-gray-300'} shadow-sm`}
+            >
+                <div className="flex items-center gap-2 mb-1">
+                    <LuCornerUpLeft className={`w-4 h-4 ${isMe ? 'text-blue-500' : 'text-gray-500'}`} />
+                    <p className="font-semibold text-sm truncate max-w-[180px]">
+                        {msg.reply.name_user || 'Unknown'}
+                    </p>
+                </div>
+                <p className="italic text-xs text-gray-600 truncate max-w-[250px]">
+                    {msg.reply.content || '[Hình ảnh hoặc nội dung không hỗ trợ]'}
+                </p>
+            </div>
+        );
+    };
 
     // ====== RENDER ======
     return (
@@ -112,12 +137,7 @@ const ShowMessage = ({
                                             ${isMe
                                                 ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-br-md'
                                                 : 'bg-gray-200 text-gray-900 rounded-2xl rounded-bl-md'}`} >
-                                        {msg.reply && (
-                                            <div className={`mb-1 px-2 py-1 rounded-xl text-xs ${isMe ? 'bg-white/20 text-white' : 'bg-white text-gray-700'} border-l-4 ${isMe ? 'border-blue-300' : 'border-gray-300'}`}>
-                                                <p className="font-semibold truncate max-w-[200px]">{msg.reply.name_user}</p>
-                                                <p className="italic truncate max-w-[220px]">{msg.reply.content}</p>
-                                            </div>
-                                        )}
+                                        {renderReplyMessage(msg, isMe)}
                                         <p>{formatMessageText(msg.content)}</p>
                                         {/* ====== NÚT BA CHẤM (MENU) ====== */}
                                         <button
@@ -151,9 +171,14 @@ const ShowMessage = ({
                                                 </button>
                                                 <button className="block w-full px-4 py-2 text-left text-black hover:bg-gray-100 rounded"
                                                     onClick={() => {
-                                                        toast("chức năng đang phát triển!!!");
-                                                        setActiveMenu(!activeMenu);
-                                                    }}>
+                                                        setReplyingMessage({
+                                                            message_id: msg.message_id,
+                                                            name_user: msg.name_user,
+                                                            content: msg.content,
+                                                        });
+                                                        setActiveMenu(null); // đóng menu
+                                                    }}
+                                                >
                                                     Reply
                                                 </button>
 

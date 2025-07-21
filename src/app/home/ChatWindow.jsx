@@ -34,6 +34,9 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   const [activeEmojiPicker, setActiveEmojiPicker] = useState(null);
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false);
   const [replyingMessage, setReplyingMessage] = useState(null);
+  const [skip, setSkip] = useState(0);
+  const [hasMore, setHasMore] = useState(true); // Ngăn việc gọi khi không còn tin
+
 
 
   const messageCache = useRef({});
@@ -99,10 +102,12 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   }, [ROOM_ID, USER_ID]);
 
   useEffect(() => {
-    const scrollContainer = scrollRef.current;
-    if (!scrollContainer) return;
-    scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: "smooth" });
-  }, [messages, dataRoom]);
+    if (ROOM_ID) {
+      setMessages([]);
+      setSkip(0);
+      setHasMore(true);
+    }
+  }, [ROOM_ID]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -126,18 +131,77 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  const waitForStableScrollHeight = (
+    container,
+    prevScrollHeight
+  ) => {
+    let tries = 0;
+    const maxTries = 10;
+    let lastHeight = container.scrollHeight;
 
-  // Message Handling
+    const check = () => {
+      const currentHeight = container.scrollHeight;
+
+      if (currentHeight !== lastHeight) {
+        lastHeight = currentHeight;
+        tries = 0; // reset nếu scrollHeight còn thay đổi
+      } else {
+        tries += 1;
+      }
+
+      if (tries >= 2) {
+        const newScrollHeight = container.scrollHeight;
+        container.scrollTop = newScrollHeight - prevScrollHeight;
+        return;
+      }
+
+      requestAnimationFrame(check);
+    };
+
+    requestAnimationFrame(check);
+  };
+
+
   const fetchMessages = useCallback(async () => {
-    if (!ROOM_ID) return;
+    if (!ROOM_ID || !hasMore) return;
+
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const prevScrollHeight = container.scrollHeight;
+
     try {
-      const oldMessages = await fetchOldMessages(ROOM_ID);
-      setMessages(oldMessages);
-      messageCache.current[ROOM_ID] = oldMessages;
+      const oldMessages = await fetchOldMessages(skip, ROOM_ID);
+      if (oldMessages.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      setMessages(prev => [...oldMessages, ...prev]);
+      setSkip(prev => prev + oldMessages.length);
+
+      // 🧠 Đợi DOM update hoàn toàn rồi set scrollTop cho mượt
+      waitForStableScrollHeight(container, prevScrollHeight);
     } catch (error) {
       console.error("error call fetchOldMessages: ", error);
     }
-  }, [ROOM_ID]);
+  }, [ROOM_ID, skip, hasMore]);
+
+
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (container.scrollTop === 0) {
+        fetchMessages(); // Gọi khi cuộn lên đầu
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [fetchMessages]);
 
   const removeMessage = async (message_id) => {
     try {

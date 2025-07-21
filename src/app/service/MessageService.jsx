@@ -13,9 +13,9 @@ export const fetchMessages = async (roomId, userId) => {
 }
 
 // get old message of a room
-export const fetchOldMessages = async (roomId) => {
+export const fetchOldMessages = async (skip, roomId) => {
     try {
-      const response = await axios.get(`${API_URL}/message/from_room/${roomId}`);
+      const response = await axios.get(`${API_URL}/message/from_room/${skip}/${roomId}`);
       if (response.status !== 200) {
         console.log("Failed to fetch messages:", response.statusText);
           throw new Error(`HTTP error! status: ${response.status}`);

@@ -199,7 +199,7 @@ export default function ChatList({ selectRoomId }) {
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-semibold text-gray-800 truncate">{chat.username}</p>
                 </div>
-                <p className="text-xs text-gray-500 truncate font-normal"> {chat.action ? (<strong>{chat.action}</strong>) : ("not message")} </p>
+                <p className={`text-xs ${chat.unread ? ("text-black font-medium") : ("text-gray-500 font-medium")} truncate`}> {chat.action ? (<strong>{chat.action}</strong>) : ("not message")} </p>
               </div>
 
               {chat.unread && (

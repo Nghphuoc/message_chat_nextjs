@@ -84,7 +84,8 @@ const ShowMessage = ({
                     </p>
                 </div>
                 <p className="italic text-xs text-gray-600 truncate max-w-[250px]">
-                    {msg.reply.content || '[Hình ảnh hoặc nội dung không hỗ trợ]'}
+                    {msg.reply.is_deleted === 1 ? (<span className="text-gray-500 italic">message was deleted</span>) : (msg.reply.content || '[Hình ảnh hoặc nội dung không hỗ trợ]')}
+
                 </p>
             </div>
         );
@@ -145,7 +146,7 @@ const ShowMessage = ({
                                                 ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-br-md'
                                                 : 'bg-gray-200 text-gray-900 rounded-2xl rounded-bl-md'}`} >
                                         {renderReplyMessage(msg, isMe)}
-                                        <p>{formatMessageText(msg.content)}</p>
+                                        {msg.is_deleted === 1 ? (<p className="text-gray-600 italic">message was deleted</p>) : (<p> {formatMessageText(msg.content)} </p>)}
                                         {/* ====== NÚT BA CHẤM (MENU) ====== */}
                                         <button
                                             onClick={() => setActiveMenu(activeMenu === msg.message_id ? null : msg.message_id)}
@@ -178,7 +179,8 @@ const ShowMessage = ({
                                                 >
                                                     Send Reaction
                                                 </button>
-                                                <button className="block w-full px-4 py-2 text-left text-black hover:bg-gray-100 rounded"
+
+                                                {msg.is_deleted === 1 ? (<p></p>) : (<button className="block w-full px-4 py-2 text-left text-black hover:bg-gray-100 rounded"
                                                     onClick={() => {
                                                         setReplyingMessage({
                                                             message_id: msg.message_id,
@@ -189,7 +191,7 @@ const ShowMessage = ({
                                                     }}
                                                 >
                                                     Reply
-                                                </button>
+                                                </button>)}
 
                                                 {isMe && (
                                                     <div>
@@ -200,16 +202,18 @@ const ShowMessage = ({
                                                             }}>
                                                             Edit message
                                                         </button>
-                                                        <button
-                                                            className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded text-red-500"
-                                                            onClick={() => {
-                                                                setActiveMenu(null);
-                                                                deleteMessage(msg.message_id);
-                                                                setActiveMenu(!activeMenu);
-                                                            }}
-                                                        >
-                                                            🗑️ Delete
-                                                        </button>
+                                                        {msg.is_deleted === 1 ? (<p></p>) :
+                                                            (<button
+                                                                className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded text-red-500"
+                                                                onClick={() => {
+                                                                    setActiveMenu(null);
+                                                                    deleteMessage(msg.message_id);
+                                                                    setActiveMenu(!activeMenu);
+                                                                }}
+                                                            >
+                                                                🗑️ Delete
+                                                            </button>)
+                                                        }
                                                     </div>
                                                 )}
                                             </div>

@@ -80,7 +80,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     if (connectionRef.current?.roomId === ROOM_ID) return;
     if (ws.current) ws.current.close();
 
-    const socket = new WebSocket(`ws://localhost:8000/api/ws/${ROOM_ID}/${USER_ID}`);
+    const socket = new WebSocket(`${process.env.NEXT_PUBLIC_API_URL}/api/ws/${ROOM_ID}/${USER_ID}`);
     ws.current = socket;
     connectionRef.current = { roomId: ROOM_ID, socket };
 
@@ -140,11 +140,24 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   }, [ROOM_ID]);
 
   const removeMessage = async (message_id) => {
+    // try {
+    //   await deleteMessage(message_id);
+    //   setMessages(prev => prev.filter(msg => msg.message_id !== message_id));
+    // } catch (error) {
+    //   console.error("error deleting message: ", error);
+    // }
+
+    const payload = {
+      type: "delete_message",
+      data: {
+        message_id: message_id
+      },
+    };
+
     try {
-      await deleteMessage(message_id);
-      setMessages(prev => prev.filter(msg => msg.message_id !== message_id));
+      ws.current.send(JSON.stringify(payload));
     } catch (error) {
-      console.error("error deleting message: ", error);
+      console.error("Error recall function: ", error);
     }
   };
 
@@ -200,6 +213,8 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     } else if (msg.type === "cancel_reaction") {
       const { reaction_id, message_id, user_id } = msg.data;
       handleCancelReaction(reaction_id, message_id, user_id);
+    } else if (msg.type === "delete_message") {
+      handleRemoveMessage(msg.data);
     }
   };
 
@@ -278,6 +293,32 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
       })
     );
   };
+
+  const handleRemoveMessage = (updatedMessage) => {
+    setMessages(prevMessages =>
+      prevMessages.map(msg => {
+        // Trường hợp 1: update chính message
+        if (msg.message_id === updatedMessage.message_id) {
+          return { ...msg, ...updatedMessage };
+        }
+
+        // Trường hợp 2: update message nằm trong reply
+        if (msg.reply && msg.reply.message_id === updatedMessage.message_id) {
+          return {
+            ...msg,
+            reply: {
+              ...msg.reply,
+              ...updatedMessage,
+            },
+          };
+        }
+
+        // Không liên quan → giữ nguyên
+        return msg;
+      })
+    );
+  };
+
 
   const handleRightClick = (e, messageId) => {
     console.log("message_id:", messageId);

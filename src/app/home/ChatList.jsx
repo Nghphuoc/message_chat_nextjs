@@ -34,7 +34,7 @@ export default function ChatList({ selectRoomId }) {
   useEffect(() => {
     if (!USER_ID) return;
 
-    const socket = new WebSocket(`ws://localhost:8000/api/ws/status/update/${USER_ID}`);
+    const socket = new WebSocket(`${process.env.NEXT_PUBLIC_API_URL}/api/ws/status/update/${USER_ID}`);
 
     socket.onopen = () => console.log("WebSocket status connected");
     socket.onerror = (error) => console.error("WebSocket error:", error);

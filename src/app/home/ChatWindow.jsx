@@ -13,7 +13,7 @@ import ShowMessage from "@/app/comom/showmessage";
 import InputChat from "@/app/comom/inputchat";
 import { useRouter } from 'next/navigation';
 import { Toaster, toast } from "react-hot-toast";
-
+import use100vhFix from '@/hooks/use100vhFix'
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(relativeTime);
@@ -46,7 +46,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
   const USER_ID = user?.user_id;
   const ROOM_ID = dataRoom?.room_id;
-
+  use100vhFix()
 
   // Initialization
   useEffect(() => {
@@ -319,9 +319,10 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   );
 
   return (
-    <section className="flex flex-col flex-1 bg-gradient-to-br from-white to-gray-50 min-h-screen shadow-lg rounded-2xl border border-gray-200">
+    <section style={{ height: 'calc(var(--vh, 1vh) * 100)' }} className="flex flex-col flex-1 min-h-screen max-h-screen bg-gradient-to-br from-white to-gray-50 shadow-lg rounded-2xl border border-gray-200">
       <Toaster />
       <HeaderChat dataRoom={dataRoom} />
+      
       <ShowMessage
         scrollRef={scrollRef}
         messages={messages}

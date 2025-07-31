@@ -24,15 +24,25 @@ const ShowMessage = ({
     emojiPickerRef,
     remove,
     deleteMessage,
-    onRightClick,
     setReplyingMessage,
     replyingMessage
 }) => {
     // ====== STATE & REF ======
     const [activeMenu, setActiveMenu] = useState(null); // message_id của menu đang mở
     const menuRef = useRef(null);
+    const [contextMenu, setContextMenu] = useState({
+        visible: false,
+        x: 0,
+        y: 0,
+        messageId: null
+    });
 
 
+    useEffect(() => {
+        const handleClickOutside = () => setContextMenu(prev => ({ ...prev, visible: false }));
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, []);
     // ====== EFFECT: Đóng menu/emoji picker khi click ra ngoài ======
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -55,6 +65,22 @@ const ShowMessage = ({
         if (isToday(date)) return 'Hôm nay';
         if (isYesterday(date)) return 'Hôm qua';
         return format(date, 'EEEE, dd/MM/yyyy', { locale: vi });
+    };
+
+    const handleRightClick = (e, messageId) => {
+        console.log("message_id:", messageId);
+        e.preventDefault();
+        
+        // Lấy vị trí tương đối của container
+        const container = scrollRef.current;
+        const containerRect = container.getBoundingClientRect();
+        
+        setContextMenu({
+            visible: true,
+            x: e.clientX,
+            y: e.clientY,
+            messageId: messageId
+        });
     };
 
     function formatMessageText(message) {
@@ -120,7 +146,7 @@ const ShowMessage = ({
                         return rect.bottom > window.innerHeight - 100;
                     })();
                     return (
-                        <div id={`msg-${msg.message_id}`} key={msg.message_id} onContextMenu={(e) => onRightClick(e, msg.message_id)}>
+                        <div id={`msg-${msg.message_id}`} key={msg.message_id} onContextMenu={(e) => handleRightClick(e, msg.message_id)}>
                             {showTimeHeader && (
                                 <div className="flex justify-center text-xs text-gray-500 my-2">
                                     {formatTimeHeader(currentDate)}
@@ -218,6 +244,65 @@ const ShowMessage = ({
                                                 )}
                                             </div>
                                         )}
+                                        {/* ====== MENU LỰA CHỌN MOBLIE ====== RIGHT CLCK*/}
+
+                                        {contextMenu.visible && contextMenu.messageId === msg.message_id && (
+                                            <ul
+                                                className="fixed bg-white border border-gray-300 rounded-2xl shadow-lg z-50 text-sm text-center"
+                                                style={{
+                                                    top: Math.min(contextMenu.y + 10, window.innerHeight - 120),
+                                                    left: Math.min(contextMenu.x, window.innerWidth - 80),
+                                                    minWidth: "150px",
+                                                    transform: "translateX(-50%)"
+                                                }}
+                                            >
+                                                <button
+                                                    className="block w-full px-4 py-2 text-left text-black hover:bg-gray-100 rounded"
+                                                    onClick={() => {
+                                                        setContextMenu(prev => ({ ...prev, visible: false }));
+                                                        setActiveEmojiPicker(msg.message_id);
+                                                    }}
+                                                >
+                                                    Send Reaction
+                                                </button>
+                                                {msg.is_deleted === 1 ? (<p></p>) : (<button className="block w-full px-4 py-2 text-left text-black hover:bg-gray-100 rounded"
+                                                    onClick={() => {
+                                                        setReplyingMessage({
+                                                            message_id: msg.message_id,
+                                                            name_user: msg.name_user,
+                                                            content: msg.content,
+                                                        });
+                                                        setContextMenu(prev => ({ ...prev, visible: false }));
+                                                    }}
+                                                >
+                                                    Reply
+                                                </button>)}
+
+                                                {isMe && (
+                                                    <div>
+                                                        <button className="block w-full px-4 py-2 text-left text-black hover:bg-gray-100 rounded"
+                                                            onClick={() => {
+                                                                toast("chức năng đang phát triển!!!");
+                                                                setContextMenu(prev => ({ ...prev, visible: false }));
+                                                            }}>
+                                                            Edit message
+                                                        </button>
+                                                        {msg.is_deleted === 1 ? (<p></p>) :
+                                                            (<button
+                                                                className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded text-red-500"
+                                                                onClick={() => {
+                                                                    deleteMessage(msg.message_id);
+                                                                    setContextMenu(prev => ({ ...prev, visible: false }));
+                                                                }}
+                                                            >
+                                                                🗑️ Delete
+                                                            </button>)
+                                                        }
+                                                    </div>
+                                                )}
+                                            </ul>
+                                        )}
+
                                         {/* ====== EMOJI PICKER ====== */}
                                         {activeEmojiPicker === msg.message_id && (
                                             <div
@@ -308,6 +393,8 @@ const ShowMessage = ({
                     </div>
                 )
             }
+
+
         </div >
     );
 };

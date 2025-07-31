@@ -46,7 +46,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
   const USER_ID = user?.user_id;
   const ROOM_ID = dataRoom?.room_id;
-  use100vhFix()
 
   // Initialization
   useEffect(() => {

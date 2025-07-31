@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api`;
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
 
 export const login = async (user) => {
   try {
-    const response = await axios.post(`${API_URL}/auth/login`, user);
+    const response = await axios.post(`${API_URL}/api/auth/login`, user);
     return response.data;
   } catch (error) {
     console.error('Login error:', error);
@@ -14,7 +14,7 @@ export const login = async (user) => {
 
 export const register = async (user) => {
   try {
-    const response = await axios.post(`${API_URL}/auth/register`, user);
+    const response = await axios.post(`${API_URL}/api/auth/register`, user);
     return response;
   } catch (error) {
     console.error("Registration error:", error.response?.data);

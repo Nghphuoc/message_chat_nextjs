@@ -1,5 +1,5 @@
 'use client';
-
+import { useMediaQuery } from 'react-responsive'
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
@@ -20,6 +20,7 @@ const PageRoot = () => {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const isMobile = useMediaQuery({ maxWidth: 767 })
 
   // Load user from sessionStorage
   const loadUser = useCallback(() => {
@@ -83,7 +84,7 @@ const PageRoot = () => {
     <>
       <div className="flex h-screen overflow-hidden bg-gradient-to-tr from-sky-50 to-blue-100">
         {/* Sidebar */}
-        <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white shadow-sm">
+        <div className="flex flex-shrink-0 h-screen border-r border-gray-200 bg-white shadow-sm">
           <Sidebar chatGroup={() => setCheckedListChat(prev => !prev)} />
         </div>
 
@@ -91,13 +92,13 @@ const PageRoot = () => {
         <div className="flex flex-1 flex-col md:flex-row" ref={containerRef}>
 
           {checkedListChat && (
-            <div className="hidden md:flex flex-shrink-0 h-screen border-r border-gray-200 bg-white transition-all duration-300 ease-in-out transform tracking-widest transform-fill">
-              <ChatList selectRoomId={setRoomSelectAtChatList} />
+            <div className=" md:ml-[80px] flex flex-shrink-0 h-screen border-r border-gray-200 bg-white transition-all duration-300 ease-in-out transform tracking-widest transform-fill" onClick={() => {if (isMobile) setCheckedListChat(prev => !prev)}}>
+              <ChatList selectRoomId={setRoomSelectAtChatList}/>
             </div>
           )}
 
           {/* Chat Window */}
-          {checkedListChat ? (<div className="flex flex-1 flex-col relative bg-white min-h-screen overflow-hidden">
+          {checkedListChat ? (<div className="hidden md:flex flex-1 flex-col relative bg-white min-h-screen overflow-hidden ">
             <ChatWindow
               onMenuClick={() => setCheckedListChat(!checkedListChat)}
               onChatListClick={() => setRoomSelectAtChatList(null)}
@@ -110,7 +111,7 @@ const PageRoot = () => {
               className="hidden lg:block absolute top-0 right-0 h-full w-2 cursor-col-resize z-20"
             >
             </div>
-          </div>) : (<div className="ml-[80px] flex flex-1 flex-col relative bg-white min-h-screen overflow-hidden">
+          </div>) : (<div className="flex flex-1 flex-col relative bg-white min-h-screen overflow-hidden">
             <ChatWindow
               onMenuClick={() => setCheckedListChat(!checkedListChat)}
               onChatListClick={() => setRoomSelectAtChatList(null)}

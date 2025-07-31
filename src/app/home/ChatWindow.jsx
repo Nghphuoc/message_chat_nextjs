@@ -47,13 +47,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   const USER_ID = user?.user_id;
   const ROOM_ID = dataRoom?.room_id;
 
-  const [contextMenu, setContextMenu] = useState({
-    visible: false,
-    x: 0,
-    y: 0,
-    messageId: null
-  });
-
 
   // Initialization
   useEffect(() => {
@@ -120,11 +113,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     };
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = () => setContextMenu(prev => ({ ...prev, visible: false }));
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+
 
 
   // Message Handling
@@ -320,16 +309,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   };
 
 
-  const handleRightClick = (e, messageId) => {
-    console.log("message_id:", messageId);
-    e.preventDefault();
-    setContextMenu({
-      visible: true,
-      x: e.clientX,
-      y: e.clientY,
-      messageId: messageId
-    });
-  };
+  
 
   // UI render
   if (!dataRoom) return (
@@ -354,7 +334,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         emojiPickerRef={emojiPickerRef}
         remove={removeReacion}
         deleteMessage={removeMessage}
-        onRightClick={handleRightClick}
         setReplyingMessage={setReplyingMessage}
         replyingMessage={replyingMessage}
       />
@@ -378,37 +357,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
       <div className="absolute bottom-15 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <ScrollToBottomButton scrollRef={scrollRef} />
       </div>
-
-      {contextMenu.visible && (
-        <ul
-          className="absolute bg-white border border-gray-300 rounded-2xl shadow-lg z-50 text-sm text-center"
-          style={{
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            minWidth: "150px"
-          }}
-        >
-          <li
-            className="py-2 hover:bg-gray-100 cursor-pointer"
-            onClick={() => {
-              removeMessage(contextMenu.messageId);
-              setContextMenu(prev => ({ ...prev, visible: false }));
-            }}
-          >
-            🗑️ Xóa tin nhắn
-          </li>
-          <li
-            className="py-2 hover:bg-gray-100 cursor-pointer"
-            onClick={() => {
-              toast("Chức năng đang phát triển");
-              setContextMenu(prev => ({ ...prev, visible: false }));
-            }}
-          >
-            ✏️ Sửa tin nhắn
-          </li>
-        </ul>
-      )}
     </section>
   );
 }

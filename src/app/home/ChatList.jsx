@@ -94,7 +94,7 @@ export default function ChatList({ selectRoomId }) {
   }
 
   return (
-    <div className="hidden md:flex ml-[80px] w-96 flex-col border-r border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-lg ">
+    <div className="flex w-96 flex-col border-r border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-lg ">
       <section className="flex flex-col w-full h-full px-2 py-4 ">
         {/* User Info */}
         <div className="flex items-center space-x-3 sm:space-x-2 mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-sm">
@@ -170,7 +170,7 @@ export default function ChatList({ selectRoomId }) {
         </div>
 
         {/* Chat List */}
-        <ul className="flex flex-col space-y-2 sm:space-y-3 h-96 overflow-y-auto scrollbar-thin scrollbar-hide" style={{ maxHeight: "500px" }}>
+        <ul className="flex flex-col space-y-2 sm:space-y-3 max-h-screen overflow-y-auto scrollbar-thin scrollbar-hide">
           {/* Additional sample chats */}
           {chatList.map((chat) => (
             <li

@@ -319,10 +319,10 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   );
 
   return (
-    <section style={{ height: 'calc(var(--vh, 1vh) * 100)' }} className="flex flex-col flex-1 min-h-screen max-h-screen bg-gradient-to-br from-white to-gray-50 shadow-lg rounded-2xl border border-gray-200">
+    <section style={{ height: 'calc(var(--vh, 1vh) * 100)' }} className="flex flex-col">
       <Toaster />
       <HeaderChat dataRoom={dataRoom} />
-      
+      <div className="flex-1 min-h-0 overflow-y-auto">
       <ShowMessage
         scrollRef={scrollRef}
         messages={messages}
@@ -338,6 +338,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         setReplyingMessage={setReplyingMessage}
         replyingMessage={replyingMessage}
       />
+      </div>
       <InputChat
         input={input}
         setInput={setInput}

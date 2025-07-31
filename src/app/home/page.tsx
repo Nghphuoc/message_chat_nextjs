@@ -8,6 +8,7 @@ import ChatList from './ChatList';
 import ChatWindow from './ChatWindow';
 import RightPanel from './rightPanel';
 //import UserDetail from './UserDetail';
+import  PermissionModal from "@/app/modal/permissionmodal";
 import "../globals.css";
 
 const PageRoot = () => {
@@ -17,7 +18,7 @@ const PageRoot = () => {
   const [checkedListChat, setCheckedListChat] = useState(true);
   const [user, setUser] = useState(null);
   const [userChecked, setUserChecked] = useState(false);
-
+  const checkShowAskNotifycation = true;
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const isMobile = useMediaQuery({ maxWidth: 767 })
@@ -82,6 +83,7 @@ const PageRoot = () => {
 
   return (
     <>
+      {isMobile && checkShowAskNotifycation ?  (<PermissionModal />) : (<></>)}
       <div className="flex h-screen overflow-hidden bg-gradient-to-tr from-sky-50 to-blue-100">
         {/* Sidebar */}
         <div className="flex flex-shrink-0 h-screen border-r border-gray-200 bg-white shadow-sm">

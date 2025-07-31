@@ -2,6 +2,7 @@
 import "../../css/hiddenscroll.css";
 import { GoArrowLeft } from "react-icons/go";
 import { FiMoreVertical } from "react-icons/fi";
+import { useRouter } from 'next/navigation'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -19,6 +20,7 @@ dayjs.locale('vi');
 const HeaderChat = ({ dataRoom }) => {
   const [data, setData] = useState([]);
   const [checkShow, setCheckShow] = useState(false);
+  //const router = useRouter();
 
   useEffect(() => {
     setData(dataRoom);
@@ -30,7 +32,7 @@ const HeaderChat = ({ dataRoom }) => {
       {/* Left: Avatar + Username + Status */}
       <div className="flex items-center space-x-3 min-w-0">
         {/* Back button - mobile only */}
-        <div className="md:hidden cursor-pointer right-1.5">
+        <div className="md:hidden cursor-pointer right-1.5" >
           <GoArrowLeft className="w-5 h-5 text-gray-500" />
         </div>
 

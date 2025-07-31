@@ -46,7 +46,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
   const USER_ID = user?.user_id;
   const ROOM_ID = dataRoom?.room_id;
-
+  use100vhFix();
   // Initialization
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user");
@@ -308,7 +308,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   };
 
 
-  
+
 
   // UI render
   if (!dataRoom) return (
@@ -318,44 +318,49 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   );
 
   return (
-    <section style={{ height: 'calc(var(--vh, 1vh) * 100)' }} className="flex flex-col">
-      <Toaster />
-      <HeaderChat dataRoom={dataRoom} />
-      <ShowMessage
-        scrollRef={scrollRef}
-        messages={messages}
-        dataRoom={dataRoom}
-        USER_ID={USER_ID}
-        isTyping={isTyping}
-        activeEmojiPicker={activeEmojiPicker}
-        setActiveEmojiPicker={setActiveEmojiPicker}
-        addReaction={addReaction}
-        emojiPickerRef={emojiPickerRef}
-        remove={removeReacion}
-        deleteMessage={removeMessage}
-        setReplyingMessage={setReplyingMessage}
-        replyingMessage={replyingMessage}
-      />
-      <InputChat
-        input={input}
-        setInput={setInput}
-        sendMessage={sendMessage}
-        isTyping={isTyping}
-        setIsTyping={setIsTyping}
-        ws={ws}
-        typingTimeoutRef={typingTimeoutRef}
-        showInputEmojiPicker={showInputEmojiPicker}
-        setShowInputEmojiPicker={setShowInputEmojiPicker}
-        inputEmojiPickerRef={inputEmojiPickerRef}
-        handleInputChange={handleInputChange}
-        handleInputFocus={handleInputFocus}
-        handleInputBlur={handleInputBlur}
-        replyingMessage={replyingMessage}
-        setReplyingMessage={setReplyingMessage}
-      />
-      <div className="absolute bottom-15 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <ScrollToBottomButton scrollRef={scrollRef} />
-      </div>
-    </section>
+    <>
+      <section className="flex flex-col min-h-screen">
+        <Toaster />
+        <HeaderChat dataRoom={dataRoom} />
+        <ShowMessage
+          scrollRef={scrollRef}
+          messages={messages}
+          dataRoom={dataRoom}
+          USER_ID={USER_ID}
+          isTyping={isTyping}
+          activeEmojiPicker={activeEmojiPicker}
+          setActiveEmojiPicker={setActiveEmojiPicker}
+          addReaction={addReaction}
+          emojiPickerRef={emojiPickerRef}
+          remove={removeReacion}
+          deleteMessage={removeMessage}
+          setReplyingMessage={setReplyingMessage}
+          replyingMessage={replyingMessage}
+        />
+
+        <div className="absolute bottom-15 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <ScrollToBottomButton scrollRef={scrollRef} />
+        </div>
+        <div className="fixed bottom-0 left-0 w-full z-50 bg-white">
+          <InputChat
+            input={input}
+            setInput={setInput}
+            sendMessage={sendMessage}
+            isTyping={isTyping}
+            setIsTyping={setIsTyping}
+            ws={ws}
+            typingTimeoutRef={typingTimeoutRef}
+            showInputEmojiPicker={showInputEmojiPicker}
+            setShowInputEmojiPicker={setShowInputEmojiPicker}
+            inputEmojiPickerRef={inputEmojiPickerRef}
+            handleInputChange={handleInputChange}
+            handleInputFocus={handleInputFocus}
+            handleInputBlur={handleInputBlur}
+            replyingMessage={replyingMessage}
+            setReplyingMessage={setReplyingMessage}
+          />
+        </div>
+      </section>
+    </>
   );
 }

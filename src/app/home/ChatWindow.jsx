@@ -319,7 +319,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
 
   return (
     <>
-      <section className="flex flex-col min-h-screen">
+      <section className="flex flex-col min-h-screen scrollbar-hide">
         <Toaster />
         <HeaderChat dataRoom={dataRoom} />
         <ShowMessage
@@ -341,7 +341,7 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         <div className="absolute bottom-15 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <ScrollToBottomButton scrollRef={scrollRef} />
         </div>
-          <InputChat
+          <InputChat className="fixed bottom-0"
             input={input}
             setInput={setInput}
             sendMessage={sendMessage}

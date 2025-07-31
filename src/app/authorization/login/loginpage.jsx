@@ -4,6 +4,7 @@ import { FaGoogle, FaFacebook, FaGithub } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { login } from '@/app/service/AuthService'; // Import your AuthService methods
 import toast, { Toaster } from 'react-hot-toast';
+
 export default function LoginPage() {
     const router = useRouter();
     const [formData, setFormData] = useState({

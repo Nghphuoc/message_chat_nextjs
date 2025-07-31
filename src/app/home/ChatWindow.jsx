@@ -341,7 +341,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         <div className="absolute bottom-15 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <ScrollToBottomButton scrollRef={scrollRef} />
         </div>
-        <div className="fixed bottom-0 left-0 w-full z-50 bg-white">
           <InputChat
             input={input}
             setInput={setInput}
@@ -359,7 +358,6 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
             replyingMessage={replyingMessage}
             setReplyingMessage={setReplyingMessage}
           />
-        </div>
       </section>
     </>
   );

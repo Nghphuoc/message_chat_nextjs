@@ -1,5 +1,5 @@
 'use client';
-import { useMediaQuery } from 'react-responsive'
+import { useMediaQuery } from 'react-responsive';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
@@ -85,16 +85,18 @@ const PageRoot = () => {
       <div className="flex h-screen overflow-hidden bg-gradient-to-tr from-sky-50 to-blue-100">
         {/* Sidebar */}
         <div className="flex flex-shrink-0 h-screen border-r border-gray-200 bg-white shadow-sm">
-          <Sidebar chatGroup={() => setCheckedListChat(prev => !prev)} />
+          <Sidebar chatGroup={() => setCheckedListChat(true)}  />
         </div>
 
         {/* Main Container */}
         <div className="flex flex-1 flex-col md:flex-row" ref={containerRef}>
 
           {checkedListChat && (
-            <div className=" md:ml-[80px] flex flex-shrink-0 h-screen border-r border-gray-200 bg-white transition-all duration-300 ease-in-out transform tracking-widest transform-fill" onClick={() => {if (isMobile) setCheckedListChat(prev => !prev)}}>
-              <ChatList selectRoomId={setRoomSelectAtChatList}/>
-            </div>
+            <div className=" md:ml-[80px] flex flex-shrink-0 h-screen border-r border-gray-200 bg-white transition-all duration-300 ease-in-out transform tracking-widest transform-fill">
+              {/* <div onClick={() => {if (isMobile) setCheckedListChat(prev => !prev)}}> */}
+              <ChatList selectRoomId={setRoomSelectAtChatList} isOpenSideBar={() => {if (isMobile) setCheckedListChat(false)}}/>
+              </div>
+            // </div>
           )}
 
           {/* Chat Window */}
@@ -111,7 +113,7 @@ const PageRoot = () => {
               className="hidden lg:block absolute top-0 right-0 h-full w-2 cursor-col-resize z-20"
             >
             </div>
-          </div>) : (<div className="flex flex-1 flex-col relative bg-white min-h-screen overflow-hidden">
+          </div>) : (<div className={`${(!isMobile) ? "ml-[80px]" : ""}  flex flex-1 flex-col relative bg-white min-h-screen overflow-hidden`}>
             <ChatWindow
               onMenuClick={() => setCheckedListChat(!checkedListChat)}
               onChatListClick={() => setRoomSelectAtChatList(null)}

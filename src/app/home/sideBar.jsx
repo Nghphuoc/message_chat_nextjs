@@ -10,12 +10,14 @@ import {
   faSignOutAlt,
   faUserGroup
 } from '@fortawesome/free-solid-svg-icons';
+import { useMediaQuery } from 'react-responsive';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export default function Sidebar({ chatGroup }) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const isMobile = useMediaQuery({ maxWidth: 767 })
 
   const logout = () => {
     window.dispatchEvent(new Event("logout"));
@@ -41,10 +43,17 @@ export default function Sidebar({ chatGroup }) {
     router.push("/addfriend");
   }
 
+  const chat = () => {
+    if (isMobile && setIsOpen) {
+      setIsOpen(false);
+    }
+    chatGroup();
+  }
+
   const navItems = [
     { icon: faUser, label: 'Profile', action: profile },
-    { icon: faCommentAlt, label: 'Chats', action: chatGroup },
-    { icon: faUserGroup , label: 'Friend', action: friend },
+    { icon: faCommentAlt, label: 'Chats', action: chat },
+    { icon: faUserGroup, label: 'Friend', action: friend },
     { icon: faCog, label: 'Settings', action: setting },
     { icon: faQuestionCircle, label: 'Help', action: help },
     { icon: faSignOutAlt, label: 'Logout', action: logout },
@@ -57,7 +66,7 @@ export default function Sidebar({ chatGroup }) {
         className="fixed md:hidden top-4 left-4 z-50 bg-blue-600 text-white p-2 rounded-full shadow-lg"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <FontAwesomeIcon icon={faBolt} />
+        <FontAwesomeIcon icon={faBolt} className='w-5 h-5' />
       </button>
 
       {/* Sidebar */}
@@ -67,9 +76,9 @@ export default function Sidebar({ chatGroup }) {
       >
         {/* Logo */}
         <Link href={"/home"}>
-        <div className="flex items-center justify-center w-16 h-16 mx-auto mt-6 mb-8 rounded-2xl bg-white shadow-lg hover:scale-110 transform transition-transform duration-300">
-          <FontAwesomeIcon icon={faBolt} className="text-blue-600 text-2xl" />
-        </div>
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mt-6 mb-8 rounded-2xl bg-white shadow-lg hover:scale-110 transform transition-transform duration-300">
+            <FontAwesomeIcon icon={faBolt} className="text-blue-600 text-2xl" />
+          </div>
         </Link>
 
         {/* Navigation */}

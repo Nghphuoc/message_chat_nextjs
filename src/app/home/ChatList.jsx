@@ -12,7 +12,7 @@ dayjs.extend(timezone);
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
 
-export default function ChatList({ selectRoomId }) {
+export default function ChatList({ selectRoomId, isOpenSideBar }) {
   const [user, setUser] = React.useState(null);
   const [search, setSearch] = React.useState("");
   const [chatList, setChatList] = React.useState([]);
@@ -79,6 +79,10 @@ export default function ChatList({ selectRoomId }) {
     selectRoomId(chat);
     console.log("Selected room ID:", chat);
   };
+
+  const closeSideBar = (data) => {
+    isOpenSideBar(data);
+  }
 
   const filterChatList = (searchValue) => {
     const lowerSearch = searchValue.toLowerCase();
@@ -175,7 +179,10 @@ export default function ChatList({ selectRoomId }) {
           {chatList.map((chat) => (
             <li
               key={chat.room_id}
-              onClick={() => onclickSelectRoom(chat)}
+              onClick={() => {
+                onclickSelectRoom(chat)
+                closeSideBar(false)
+              }}
               className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-xl hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-200 cursor-pointer group"
             >
               <div className="relative">

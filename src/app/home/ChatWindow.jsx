@@ -14,6 +14,7 @@ import InputChat from "@/app/comom/inputchat";
 import { useRouter } from 'next/navigation';
 import { Toaster, toast } from "react-hot-toast";
 import use100vhFix from '@/app/hook/use100vhFix';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(relativeTime);
@@ -34,7 +35,11 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   const [activeEmojiPicker, setActiveEmojiPicker] = useState(null);
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false);
   const [replyingMessage, setReplyingMessage] = useState(null);
-
+  const lastNotified = {
+    message: null,
+    reaction: null,
+    delete: null,
+  };
 
   const messageCache = useRef({});
   const connectionRef = useRef(null);
@@ -64,6 +69,12 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   }, [chat]);
 
   useEffect(() => {
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  useEffect(() => {
     if (!ROOM_ID || !USER_ID) {
       if (ws.current) ws.current.close();
       setMessages([]);
@@ -80,7 +91,76 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
     socket.onerror = () => console.log("error connect!");
     socket.onclose = (event) => { if (ws.current === socket) ws.current = null; };
 
-    socket.onmessage = (event) => handleSocketMessage(event);
+    socket.onmessage = (event) => {
+      handleSocketMessage(event);
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === "message") {
+        const newMessage = msg.data;
+        const messageWithReply = {
+          ...newMessage,
+          reply: newMessage.reply ?? null,
+        };
+
+        const isNotified = lastNotified.message === newMessage.message_id;
+
+        if (
+          newMessage.user_id !== USER_ID &&
+          document.visibilityState !== 'visible' &&
+          !isNotified
+        ) {
+          showNotification(
+            `Tin nhắn từ ${newMessage.name_user || "ai đó"}`,
+            newMessage.content,
+            '/chat-icon.png'
+          );
+          lastNotified.message = newMessage.message_id;
+        }
+
+        setMessages(prev => {
+          if (prev.some(m => m.message_id === messageWithReply.message_id)) return prev;
+
+          const updated = [...prev, messageWithReply];
+          messageCache.current[ROOM_ID] = updated;
+          return updated;
+        });
+
+      } else if (msg.type === "reaction") {
+        const { reaction_id, message_id, emoji, user_id } = msg.data;
+
+        const isNotified = lastNotified.reaction === reaction_id;
+
+        handleReaction(reaction_id, message_id, emoji, user_id);
+
+        if (
+          user_id !== USER_ID &&
+          document.visibilityState !== 'visible' &&
+          !isNotified
+        ) {
+          showNotification(msg.data.name_user + " đã thả cảm xúc", `Biểu cảm: ${emoji}`, '/emoji-icon.png');
+          lastNotified.reaction = reaction_id;
+        }
+
+      } else if (msg.type === "cancel_reaction") {
+        const { reaction_id, message_id, user_id } = msg.data;
+        handleCancelReaction(reaction_id, message_id, user_id);
+
+      } else if (msg.type === "delete_message") {
+        handleRemoveMessage(msg.data);
+
+        const isNotified = lastNotified.delete === msg.data.message_id;
+
+        if (
+          msg.data.sender_id !== USER_ID &&
+          document.visibilityState !== 'visible' &&
+          !isNotified
+        ) {
+          showNotification("Tin nhắn đã bị xóa", "Một tin nhắn đã bị gỡ.", '/delete-icon.png');
+          lastNotified.delete = msg.data.message_id;
+        }
+      }
+    };
+
     fetchMessages();
 
     return () => {
@@ -113,6 +193,14 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
   }, []);
 
 
+  const showNotification = (title, body, icon = '/chat-icon.png') => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, {
+        body,
+        icon, // chỉ nhận URL string, không phải component
+      });
+    }
+  };
 
 
   // Message Handling
@@ -341,23 +429,23 @@ export default function ChatWindow({ onMenuClick, onChatListClick, chat }) {
         <div className="absolute bottom-15 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <ScrollToBottomButton scrollRef={scrollRef} />
         </div>
-          <InputChat className="fixed bottom-0"
-            input={input}
-            setInput={setInput}
-            sendMessage={sendMessage}
-            isTyping={isTyping}
-            setIsTyping={setIsTyping}
-            ws={ws}
-            typingTimeoutRef={typingTimeoutRef}
-            showInputEmojiPicker={showInputEmojiPicker}
-            setShowInputEmojiPicker={setShowInputEmojiPicker}
-            inputEmojiPickerRef={inputEmojiPickerRef}
-            handleInputChange={handleInputChange}
-            handleInputFocus={handleInputFocus}
-            handleInputBlur={handleInputBlur}
-            replyingMessage={replyingMessage}
-            setReplyingMessage={setReplyingMessage}
-          />
+        <InputChat className="fixed bottom-0"
+          input={input}
+          setInput={setInput}
+          sendMessage={sendMessage}
+          isTyping={isTyping}
+          setIsTyping={setIsTyping}
+          ws={ws}
+          typingTimeoutRef={typingTimeoutRef}
+          showInputEmojiPicker={showInputEmojiPicker}
+          setShowInputEmojiPicker={setShowInputEmojiPicker}
+          inputEmojiPickerRef={inputEmojiPickerRef}
+          handleInputChange={handleInputChange}
+          handleInputFocus={handleInputFocus}
+          handleInputBlur={handleInputBlur}
+          replyingMessage={replyingMessage}
+          setReplyingMessage={setReplyingMessage}
+        />
       </section>
     </>
   );

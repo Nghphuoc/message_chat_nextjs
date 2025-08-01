@@ -94,7 +94,7 @@ const PageRoot = () => {
         <div className="flex flex-1 flex-col md:flex-row" ref={containerRef}>
 
           {checkedListChat && (
-            <div className=" md:ml-[80px] flex flex-shrink-0 h-screen border-r border-gray-200 bg-white transition-all duration-300 ease-in-out transform tracking-widest transform-fill">
+            <div className={`${isMobile ? ('min-w-screen') : ('w-96')} md:ml-[80px] flex flex-shrink-0 h-screen border-r border-gray-200 bg-white transition-all duration-300 ease-in-out transform tracking-widest transform-fill`}>
               {/* <div onClick={() => {if (isMobile) setCheckedListChat(prev => !prev)}}> */}
               <ChatList selectRoomId={setRoomSelectAtChatList} isOpenSideBar={() => {if (isMobile) setCheckedListChat(false)}}/>
               </div>

@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FaUsers, FaUserFriends, FaUserCheck, FaSearchPlus } from "react-icons/fa";
+import { FaUsers, FaUserFriends, FaUserCheck, FaSearchPlus, FaSpinner } from "react-icons/fa";
 import { searchUsers, acceptFriendRequest, rejectFriendRequest, addFriend } from "@/app/service/FriendService";
-
+import toast, { Toaster } from 'react-hot-toast';
 
 const Friend = ({ users, user }) => {
     const [activeTab, setActiveTab] = useState("WAIT");
@@ -14,7 +14,8 @@ const Friend = ({ users, user }) => {
     const [suggestions, setSuggestions] = useState([]);
     const [currentUserId, setCurrentUserId] = useState(user?.user_id || null);
     const [isLoading, setIsLoading] = useState(false);
-    
+    const [loadingActions, setLoadingActions] = useState({});
+
 
     useEffect(() => {
         if (users && Array.isArray(users)) {
@@ -67,32 +68,50 @@ const Friend = ({ users, user }) => {
         }
     }, [users, activeTab, debouncedSearch, suggestions]);
 
-    const handleAddFriend = (userId, friendId) => {
-        fetchingAddUser(userId, friendId);
-        setAdded(prev => ({ ...prev, [friendId]: true }));
-
+    const setLoading = (friendId, value) => {
+        setLoadingActions(prev => ({ ...prev, [friendId]: value }));
     };
 
-    const fetchingAddUser = async ( userId, friendId ) => {
+    const handleAddFriend = async (userId, friendId) => {
+        if (loadingActions[friendId]) return; // Prevent multiple clicks
+        setLoading(friendId, true);
         try {
-          const response = await addFriend(userId, friendId);
-          //setListUser(response);
-          alert("Friend request sent successfully! ", response);
+            const response = await addFriend(friendId, userId);
+            console.log("Add friend response:", response); // Debug log
+            setAdded(prev => ({ ...prev, [friendId]: true }));
+            toast.success("Đã gửi lời mời kết bạn thành công! 🎉");
+            // Remove user from suggestions list after successful add friend
+            if (activeTab === "suggestions") {
+                setUserList(prev => {
+                    const filtered = prev.filter(user => user.user_id !== friendId);
+                    console.log("Filtered suggestions:", filtered); // Debug log
+                    return filtered;
+                });
+            }
         } catch (error) {
-          console.error("Error adding friend:", error);
+            console.error("Error adding friend:", error);
+            toast.error("Có lỗi xảy ra khi gửi lời mời kết bạn! 😢");
+        } finally {
+            setLoading(friendId, false);
         }
-      };
-    
+    };
+
     const handleMessage = (id) => {
+        if (loadingActions[id]) return; // Prevent multiple clicks
+        setLoading(id, true);
         setMessaged(prev => ({ ...prev, [id]: true }));
-        setTimeout(() => setMessaged(prev => ({ ...prev, [id]: false })), 1200);
+        toast.success("Chuyển đến trang chat! 💬");
+        setTimeout(() => {
+            setMessaged(prev => ({ ...prev, [id]: false }));
+            setLoading(id, false);
+        }, 1200);
     };
 
     const TABS = [
         { label: "Lời mời kết bạn", key: "WAIT", icon: <FaUserCheck /> },
         { label: "Bạn bè", key: "ACCEPTED", icon: <FaUserFriends /> },
         { label: "Đã gửi", key: "PENDING", icon: <FaUsers /> },
-        { label: "Tìm Kiếm", key: "suggestions", icon: <FaSearchPlus  /> },
+        { label: "Tìm Kiếm", key: "suggestions", icon: <FaSearchPlus /> },
     ];
 
     const handleCheckActiveTab = (tabKey) => {
@@ -106,18 +125,54 @@ const Friend = ({ users, user }) => {
     };
 
     const handleReject = async (user_id, friend_id) => {
+        if (loadingActions[friend_id]) return; // Prevent multiple clicks
+        setLoading(friend_id, true);
         try {
-            const data = await rejectFriendRequest(user_id, friend_id);
+            toast.error("Ai cho? Hỏi người ta chưa? tự quết định à");
+            // const data = await rejectFriendRequest(user_id, friend_id);
+            // if(data.status === 200){
+            //     toast.success("Đã từ chối lời mời kết bạn! 👋");
+            // }
+            // Remove user from current list after reject
+            setUserList(prev => prev.filter(user => {
+                if (activeTab === "suggestions") {
+                    return user.user_id !== friend_id;
+                } else {
+                    return user.user?.user_id !== friend_id;
+                }
+            }));
         } catch (error) {
             console.error("Error rejecting friend request:", error);
+            toast.error("Có lỗi xảy ra khi từ chối lời mời! 😢");
+        } finally {
+            setTimeout(() => setLoading(friend_id, false), 1000); // Reset sau 1 giây
         }
     };
 
     const handleAccept = async (user_id, friend_id) => {
+        if (loadingActions[friend_id]) return; // Prevent multiple clicks
+        setLoading(friend_id, true);
         try {
             const data = await acceptFriendRequest(user_id, friend_id);
+            console.log("Accept response:", data); // Debug log
+            toast.success("Đã thêm một con mồi vào nồi! 🎉");
+            // Remove user from current list after successful accept
+            setUserList(prev => {
+                const filtered = prev.filter(user => {
+                    if (activeTab === "suggestions") {
+                        return user.user_id !== friend_id;
+                    } else {
+                        return user.user?.user_id !== friend_id;
+                    }
+                });
+                console.log("Filtered list:", filtered); // Debug log
+                return filtered;
+            });
         } catch (error) {
             console.error("Error accepting friend request:", error);
+            toast.error("Có lỗi xảy ra khi chấp nhận lời mời! 😢");
+        } finally {
+            setLoading(friend_id, false);
         }
     };
 
@@ -131,53 +186,55 @@ const Friend = ({ users, user }) => {
             friendId = userItem.user.user_id;
         }
 
+        const isLoading = !!loadingActions[friendId];
+
         switch (status) {
             case "PENDING":
                 return [
                     {
-                        text: "Hủy lời mời",
+                        text: isLoading ? <><FaSpinner className="animate-spin mr-1" /> Đang xử lý...</> : "Hủy lời mời",
                         style: "bg-gray-100 text-red-600",
-                        //onClick: () => handleCancelRequest(currentUserId, friendId),
-                        disabled: false
+                        onClick: isLoading ? undefined : () => handleReject(currentUserId, friendId),
+                        disabled: isLoading
                     }
                 ];
             case "WAIT":
                 return [
                     {
-                        text: "Chấp nhận",
+                        text: isLoading ? <><FaSpinner className="animate-spin mr-1" /> Đang xử lý...</> : "Chấp nhận",
                         style: "bg-green-600 text-white",
-                        onClick: () => handleAccept(currentUserId, friendId),
-                        disabled: false
+                        onClick: isLoading ? undefined : () => handleAccept(currentUserId, friendId),
+                        disabled: isLoading
                     },
                     {
-                        text: "Từ chối",
+                        text: isLoading ? <><FaSpinner className="animate-spin mr-1" /> Đang xử lý...</> : "Từ chối",
                         style: "bg-red-600 text-white",
-                        onClick: () => handleReject(currentUserId, friendId),
-                        disabled: false
+                        onClick: isLoading ? undefined : () => handleReject(currentUserId, friendId),
+                        disabled: isLoading
                     }
                 ];
             case "ACCEPTED":
                 return [
                     {
-                        text: "Nhắn tin",
+                        text: isLoading ? <><FaSpinner className="animate-spin mr-1" /> Đang xử lý...</> : "Nhắn tin",
                         style: "bg-pink-500 text-white",
-                        onClick: () => handleMessage(friendId),
-                        disabled: false
+                        onClick: isLoading ? undefined : () => handleMessage(friendId),
+                        disabled: isLoading
                     },
                     {
-                        text: "Hủy kết bạn",
+                        text: isLoading ? <><FaSpinner className="animate-spin mr-1" /> Đang xử lý...</> : "Hủy kết bạn",
                         style: "bg-gray-200 text-red-600",
-                        onClick: () => handleReject(currentUserId, friendId),
-                        disabled: false
+                        onClick: isLoading ? undefined : () => handleReject(currentUserId, friendId),
+                        disabled: isLoading
                     }
                 ];
             default:
                 return [
                     {
-                        text: "Kết bạn",
+                        text: isLoading ? <><FaSpinner className="animate-spin mr-1" /> Đang xử lý...</> : "Kết bạn",
                         style: "bg-blue-600 text-white",
-                        onClick: () => handleAddFriend(friendId, currentUserId),
-                        disabled: false
+                        onClick: isLoading ? undefined : () => handleAddFriend(currentUserId, friendId),
+                        disabled: isLoading
                     }
                 ];
         }
@@ -185,6 +242,7 @@ const Friend = ({ users, user }) => {
 
     return (
         <>
+            <Toaster />
             <div className="min-h-screen bg-gradient-to-tr from-blue-50 to-pink-50 flex flex-col items-center py-6 px-2 sm:py-10 sm:px-4">
                 <div className="w-full max-w-4xl">
                     {/* Search */}
@@ -272,7 +330,7 @@ const Friend = ({ users, user }) => {
                                         </div>
 
                                         <div className="flex flex-row sm:flex-col gap-2 min-w-[120px] justify-center sm:justify-start">
-                                            {getFriendActions(user, activeTab, user.user_id).map((action, idx) => (
+                                            {getFriendActions(user, activeTab).map((action, idx) => (
                                                 <button
                                                     key={idx}
                                                     onClick={action.onClick}

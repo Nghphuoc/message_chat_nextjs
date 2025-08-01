@@ -98,7 +98,7 @@ export default function ChatList({ selectRoomId, isOpenSideBar }) {
   }
 
   return (
-    <div className="flex w-96 flex-col border-r border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-lg ">
+    <div className="flex w-full flex-col border-r border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-lg ">
       <section className="flex flex-col w-full h-full px-2 py-4 ">
         {/* User Info */}
         <div className="flex items-center space-x-3 sm:space-x-2 mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-sm">
@@ -191,7 +191,7 @@ export default function ChatList({ selectRoomId, isOpenSideBar }) {
                   <img
                     src={chat.img_url}
                     alt={chat.username}
-                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                    className="w-15 h-15 sm:w-10 sm:h-10 rounded-full object-cover"
                   />
                 ) : (
                   // Nếu không có ảnh, hiển thị chữ cái đầu username
